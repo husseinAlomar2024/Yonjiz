@@ -9,7 +9,7 @@ from urllib.parse import quote
 
 from fastapi.templating import Jinja2Templates
 
-from config import ADMIN_LIMIT, APP_NAME
+from config import ADMIN_LIMIT, APP_NAME, APP_NAME_AR
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -63,6 +63,7 @@ templates.env.filters["priority_key"] = priority_key
 templates.env.filters["compact"] = compact_number
 templates.env.globals.update(
     app_name=APP_NAME,
+    app_name_ar=APP_NAME_AR,
     admin_limit=ADMIN_LIMIT,
 )
 

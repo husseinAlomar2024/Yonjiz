@@ -14,7 +14,8 @@ def test_public_pages_and_security_headers(client):
         assert response.status_code == 200, path
 
     response = client.get("/")
-    assert "Daymark" in response.text
+    assert "YONJIZ" in response.text
+    assert "ينجز" in response.text
     assert response.headers["x-content-type-options"] == "nosniff"
     assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
 
@@ -412,6 +413,104 @@ def test_registration_never_grants_admin(client):
         user = session.query(User).filter(User.username == "sneaky").one()
         assert user.role == "user"
         assert user.admin_slot is None
+    finally:
+        session.close()
+
+
+def test_primary_admin_is_protected_and_can_hire_and_kick(client):
+    primary = create_user(
+        "hussein_alomar", role="admin", admin_slot=1, primary=True
+    )
+    secondary = create_user("second_admin", role="admin", admin_slot=2)
+    candidate = create_user("candidate")
+
+    # A normal admin can see the main admin but cannot remove them.
+    login(client, "second_admin")
+    admin_page = client.get("/admin")
+    assert admin_page.status_code == 200
+    assert "Main admin" in admin_page.text
+    assert "Untouchable" in admin_page.text
+
+    for path, payload, expected in [
+        (
+            f"/admin/users/{primary.id}/role",
+            {"action": "demote"},
+            "main administrator is protected",
+        ),
+        (
+            f"/admin/users/{primary.id}/status",
+            {"action": "deactivate"},
+            "main administrator is protected",
+        ),
+        (
+            f"/admin/users/{primary.id}/delete",
+            {},
+            "main administrator is protected",
+        ),
+    ]:
+        response = client.post(path, data=payload, follow_redirects=True)
+        assert response.status_code == 200
+        assert expected in response.text
+
+    session = SessionLocal()
+    try:
+        protected = session.get(User, primary.id)
+        assert protected.role == "admin"
+        assert protected.admin_slot == 1
+        assert protected.is_primary_admin is True
+        assert protected.is_active is True
+    finally:
+        session.close()
+
+    # The main admin can kick another admin and hire a new one.
+    client.post("/auth/logout")
+    login(client, "hussein_alomar")
+
+    kicked = client.post(
+        f"/admin/users/{secondary.id}/role",
+        data={"action": "demote"},
+        follow_redirects=True,
+    )
+    assert "is now a regular user" in kicked.text
+
+    hired = client.post(
+        f"/admin/users/{candidate.id}/role",
+        data={"action": "promote"},
+        follow_redirects=True,
+    )
+    assert "now has admin seat" in hired.text
+
+    session = SessionLocal()
+    try:
+        assert session.get(User, secondary.id).role == "user"
+        assert session.get(User, candidate.id).role == "admin"
+        assert session.query(User).filter(User.is_primary_admin.is_(True)).count() == 1
+    finally:
+        session.close()
+
+
+def test_only_one_primary_admin_and_seat_one_are_enforced(client):
+    create_user("main_one", role="admin", admin_slot=1, primary=True)
+
+    session = SessionLocal()
+    try:
+        session.add(
+            User(
+                email="second-primary@example.test",
+                username="second_primary",
+                first_name="Second",
+                last_name="Primary",
+                hashed_password="x",
+                role="admin",
+                admin_slot=2,
+                is_primary_admin=True,
+                is_active=True,
+            )
+        )
+        with pytest.raises(IntegrityError):
+            session.commit()
+        session.rollback()
+        assert session.query(User).filter(User.is_primary_admin.is_(True)).count() == 1
     finally:
         session.close()
 

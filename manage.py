@@ -1,6 +1,7 @@
 """Small operator CLI for local setup.
 
 Examples:
+    python manage.py create-main-admin
     python manage.py create-admin
     python manage.py list-admins
     python manage.py show-key
@@ -22,6 +23,7 @@ from admin_service import (
     admin_seats,
     available_admin_slots,
     log_action,
+    primary_admin,
     promote_to_admin,
 )
 from config import ADMIN_ACCESS_KEY, ADMIN_LIMIT
@@ -116,6 +118,93 @@ def command_create_admin(args: argparse.Namespace) -> int:
         db.close()
 
 
+def command_create_main_admin(args: argparse.Namespace) -> int:
+    """Create the single protected main admin in seat 1."""
+
+    init_db()
+    db = SessionLocal()
+    try:
+        current = primary_admin(db)
+        if current is not None:
+            print(
+                f"A main admin already exists: @{current.username}. "
+                "Only one main admin is allowed.",
+                file=sys.stderr,
+            )
+            return 1
+
+        username = (args.username or _prompt("Username")).strip().lower()
+        if not username:
+            raise SystemExit("A username is required.")
+
+        existing = db.query(User).filter(func.lower(User.username) == username).first()
+        seat_one = (
+            db.query(User)
+            .filter(User.role == "admin", User.admin_slot == 1)
+            .first()
+        )
+        if seat_one is not None and (existing is None or seat_one.id != existing.id):
+            print(
+                f"Seat 1 is already occupied by @{seat_one.username}. "
+                "Demote that admin before creating the main admin.",
+                file=sys.stderr,
+            )
+            return 1
+
+        if existing:
+            existing.role = "admin"
+            existing.admin_slot = 1
+            existing.is_primary_admin = True
+            existing.is_active = True
+            log_action(
+                db,
+                actor_id=None,
+                action="admin.primary_created",
+                target_label=f"@{existing.username} • protected main admin",
+            )
+            db.commit()
+            print(f"@{existing.username} is now the protected main admin in seat 1.")
+            return 0
+
+        email = (args.email or _prompt("Email")).strip().lower()
+        first_name = (args.first_name or _prompt("First name")).strip()
+        last_name = (args.last_name or _prompt("Last name")).strip()
+        password = args.password or _password()
+
+        if not email or "@" not in email:
+            raise SystemExit("A valid email is required.")
+        if not first_name or not last_name:
+            raise SystemExit("First and last name are required.")
+        if len(password) < 8 or len(password.encode("utf-8")) > 72:
+            raise SystemExit("Password must be 8–72 characters.")
+
+        user = User(
+            email=email,
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            hashed_password=hash_password(password),
+            role="admin",
+            admin_slot=1,
+            is_primary_admin=True,
+            is_active=True,
+        )
+        db.add(user)
+        db.flush()
+        log_action(
+            db,
+            actor_id=None,
+            action="admin.primary_created",
+            target_label=f"@{username} • protected main admin",
+        )
+        db.commit()
+        print(f"Created protected main admin @{username} in seat 1.")
+        print("Use /auth/login-page to sign in.")
+        return 0
+    finally:
+        db.close()
+
+
 def command_list_admins(_args: argparse.Namespace) -> int:
     init_db()
     db = SessionLocal()
@@ -123,7 +212,8 @@ def command_list_admins(_args: argparse.Namespace) -> int:
         for seat in admin_seats(db):
             if seat["occupied"]:
                 person = seat["user"]
-                print(f"Seat {seat['slot']}: @{person.username} <{person.email}>")
+                marker = " [MAIN ADMIN]" if person.is_primary_admin else ""
+                print(f"Seat {seat['slot']}: @{person.username} <{person.email}>{marker}")
             else:
                 print(f"Seat {seat['slot']}: available")
         return 0
@@ -197,7 +287,7 @@ def command_seed_demo(_args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Daymark operator commands")
+    parser = argparse.ArgumentParser(description="YONJIZ operator commands")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     create = subparsers.add_parser("create-admin", help="Create or promote an administrator")
@@ -207,6 +297,17 @@ def build_parser() -> argparse.ArgumentParser:
     create.add_argument("--last-name")
     create.add_argument("--password", help="Non-interactive password; avoid in shared shells")
     create.set_defaults(func=command_create_admin)
+
+    primary = subparsers.add_parser(
+        "create-main-admin",
+        help="Create the one protected main admin in seat 1",
+    )
+    primary.add_argument("--username")
+    primary.add_argument("--email")
+    primary.add_argument("--first-name")
+    primary.add_argument("--last-name")
+    primary.add_argument("--password", help="Non-interactive password; avoid in shared shells")
+    primary.set_defaults(func=command_create_main_admin)
 
     list_cmd = subparsers.add_parser("list-admins", help="Show all three admin seats")
     list_cmd.set_defaults(func=command_list_admins)

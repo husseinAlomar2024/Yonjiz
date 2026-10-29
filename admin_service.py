@@ -33,6 +33,14 @@ def admin_count(db: Session) -> int:
     return int(db.query(func.count(User.id)).filter(User.role == "admin").scalar() or 0)
 
 
+def primary_admin(db: Session) -> Optional[User]:
+    return (
+        db.query(User)
+        .filter(User.is_primary_admin.is_(True))
+        .first()
+    )
+
+
 def available_admin_slots(db: Session) -> list[int]:
     used = {
         slot
@@ -58,6 +66,9 @@ def admin_seats(db: Session) -> list[dict]:
             "slot": slot,
             "user": by_slot.get(slot),
             "occupied": slot in by_slot,
+            "primary": bool(
+                slot in by_slot and by_slot[slot].is_primary_admin
+            ),
         }
         for slot in range(1, ADMIN_LIMIT + 1)
     ]
@@ -124,6 +135,10 @@ def demote_from_admin(
 ) -> None:
     if user.role != "admin":
         raise AdminPolicyError("This account is not an administrator.")
+    if user.is_primary_admin:
+        raise AdminPolicyError(
+            "The main administrator is protected and cannot be demoted."
+        )
     if actor.id == user.id:
         raise AdminPolicyError("You cannot remove your own admin access.")
     if admin_count(db) <= 1:
@@ -153,6 +168,10 @@ def set_user_active(
     actor: User,
     active: bool,
 ) -> None:
+    if user.is_primary_admin and not active:
+        raise AdminPolicyError(
+            "The main administrator is protected and cannot be deactivated."
+        )
     if actor.id == user.id and not active:
         raise AdminPolicyError("You cannot deactivate your own account.")
     if user.role == "admin" and not active:
@@ -172,6 +191,10 @@ def set_user_active(
 
 
 def delete_user_account(db: Session, user: User, *, actor: User) -> str:
+    if user.is_primary_admin:
+        raise AdminPolicyError(
+            "The main administrator is protected and cannot be deleted."
+        )
     if actor.id == user.id:
         raise AdminPolicyError("You cannot delete your own account.")
     if user.role == "admin" and admin_count(db) <= 1:

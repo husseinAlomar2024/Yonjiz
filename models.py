@@ -3,7 +3,9 @@
 The admin limit is *not* only an application check.  Every admin gets one of
 three numeric seats (1, 2 or 3).  A UNIQUE constraint on ``admin_slot`` makes a
 fourth admin impossible at the database layer, and a CHECK constraint keeps
-``role`` and ``admin_slot`` consistent.
+``role`` and ``admin_slot`` consistent.  Seat 1 belongs to the single protected
+main admin (``is_primary_admin``), who cannot be demoted, deactivated or deleted
+through the app.
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.orm import relationship
 
@@ -44,6 +47,9 @@ class User(Base):
     is_active = Column(Boolean, nullable=False, default=True, server_default="1")
     role = Column(String(20), nullable=False, default="user", server_default="user")
     admin_slot = Column(Integer, nullable=True)
+    is_primary_admin = Column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
     phone_number = Column(String(25), nullable=True)
     created_at = Column(DateTime, nullable=False, default=utcnow)
     last_login_at = Column(DateTime, nullable=True)
@@ -62,8 +68,20 @@ class User(Base):
             "OR (role = 'user' AND admin_slot IS NULL)",
             name="ck_users_admin_slot",
         ),
+        CheckConstraint(
+            "NOT is_primary_admin "
+            "OR (role = 'admin' AND admin_slot = 1 AND is_active)",
+            name="ck_users_primary_admin",
+        ),
         UniqueConstraint("admin_slot", name="uq_users_admin_slot"),
         Index("ix_users_role_admin_slot", "role", "admin_slot"),
+        Index(
+            "uq_users_single_primary_admin",
+            "is_primary_admin",
+            unique=True,
+            sqlite_where=text("is_primary_admin = 1"),
+            postgresql_where=text("is_primary_admin"),
+        ),
     )
 
     @property

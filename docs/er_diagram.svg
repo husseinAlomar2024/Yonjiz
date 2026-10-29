@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
-  <title id="title">Daymark entity relationship diagram</title>
+  <title id="title">YONJIZ / ينجز entity relationship diagram</title>
   <desc id="desc">Users own many todos. Users perform many admin audit log entries. The users table has a unique admin seat from one to three, guaranteeing no more than three administrators.</desc>
 
   <defs>
@@ -38,11 +38,11 @@
   <g class="sans">
     <rect x="64" y="48" width="30" height="30" rx="9" fill="#174b3b"/>
     <path d="M73 56h7.4a5.5 5.5 0 0 1 0 11H73V56Z" fill="none" stroke="#fffdf8" stroke-width="1.8"/>
-    <text x="106" y="69" font-size="19" font-weight="700" fill="#18231f">Daymark</text>
+    <text x="106" y="69" font-size="19" font-weight="700" fill="#18231f">YONJIZ <tspan font-family="Segoe UI, Tahoma, sans-serif" font-size="13" fill="#5f6d66">ينجز</tspan></text>
     <text x="106" y="84" font-size="9.5" letter-spacing="0.18em" fill="#7b8580">DATA MODEL / V1.0</text>
 
     <text x="64" y="143" class="display" font-size="41" fill="#18231f" letter-spacing="-1.3">Entity relationship diagram</text>
-    <text x="66" y="169" font-size="12.5" fill="#747f79">Three tables. Optional deadlines. A database-level cap of three administrators.</text>
+    <text x="66" y="169" font-size="12.5" fill="#747f79">Three tables. Optional deadlines. Three admin seats, one protected main admin.</text>
 
     <rect x="1098" y="55" width="238" height="82" rx="14" fill="#174b3b" filter="url(#softShadow)"/>
     <text x="1118" y="78" font-size="9" letter-spacing="0.14em" fill="#a9beb5" font-weight="700">ADMIN SEATS</text>
@@ -56,7 +56,7 @@
 
   <!-- USERS entity -->
   <g filter="url(#shadow)">
-    <rect x="64" y="214" width="399" height="492" rx="18" fill="#fffdf8" stroke="#e1dacd"/>
+    <rect x="64" y="214" width="399" height="522" rx="18" fill="#fffdf8" stroke="#e1dacd"/>
     <path d="M64 232a18 18 0 0 1 18-18h363a18 18 0 0 1 18 18v45H64v-45Z" fill="#174b3b"/>
     <circle cx="90" cy="244" r="13" fill="#2a6653"/>
     <path d="M84 239.5h6.5a4.5 4.5 0 0 1 0 9H84v-9Z" fill="none" stroke="#fffdf8" stroke-width="1.6"/>
@@ -108,22 +108,28 @@
     <text x="365" y="518" class="mono row-type" text-anchor="end">SMALLINT NULL</text>
     <line x1="86" y1="538" x2="441" y2="538" stroke="#eee8dd"/>
 
-    <text x="120" y="559" class="mono row-name">phone_number</text>
-    <text x="365" y="559" class="mono row-type" text-anchor="end">VARCHAR(25) NULL</text>
-    <line x1="86" y1="569" x2="441" y2="569" stroke="#eee8dd"/>
+    <rect x="80" y="546" width="367" height="32" rx="7" fill="#fae9e7"/>
+    <text x="86" y="566" class="mono row-name" fill="#9b3f21">ONE</text>
+    <text x="120" y="566" class="mono row-name">is_primary_admin</text>
+    <text x="365" y="566" class="mono row-type" text-anchor="end">BOOLEAN</text>
+    <line x1="86" y1="586" x2="441" y2="586" stroke="#eee8dd"/>
 
-    <text x="120" y="590" class="mono row-name">created_at</text>
-    <text x="365" y="590" class="mono row-type" text-anchor="end">TIMESTAMP</text>
-    <line x1="86" y1="600" x2="441" y2="600" stroke="#eee8dd"/>
+    <text x="120" y="607" class="mono row-name">phone_number</text>
+    <text x="365" y="607" class="mono row-type" text-anchor="end">VARCHAR(25) NULL</text>
+    <line x1="86" y1="617" x2="441" y2="617" stroke="#eee8dd"/>
 
-    <text x="120" y="621" class="mono row-name">last_login_at</text>
-    <text x="365" y="621" class="mono row-type" text-anchor="end">TIMESTAMP NULL</text>
+    <text x="120" y="638" class="mono row-name">created_at</text>
+    <text x="365" y="638" class="mono row-type" text-anchor="end">TIMESTAMP</text>
+    <line x1="86" y1="648" x2="441" y2="648" stroke="#eee8dd"/>
+
+    <text x="120" y="669" class="mono row-name">last_login_at</text>
+    <text x="365" y="669" class="mono row-type" text-anchor="end">TIMESTAMP NULL</text>
   </g>
 
   <g class="sans" font-size="9.5" fill="#8a928e">
-    <text x="86" y="661">CHECK: role IN ('user','admin')</text>
-    <text x="86" y="676">CHECK: admin ⇒ slot 1–3 · user ⇒ slot NULL</text>
-    <text x="86" y="691">UNIQUE(admin_slot) → at most 3 admins</text>
+    <text x="86" y="699">CHECK: admin ⇒ slot 1–3 · user ⇒ slot NULL</text>
+    <text x="86" y="714">UNIQUE(admin_slot) → at most 3 admins</text>
+    <text x="86" y="729">Partial UNIQUE(primary) → one main admin · seat 1 · active</text>
   </g>
 
   <!-- TODOS entity -->
@@ -239,13 +245,13 @@
   <g filter="url(#softShadow)">
     <rect x="64" y="756" width="462" height="154" rx="16" fill="#fffdf8" stroke="#e1dacd"/>
     <rect x="64" y="756" width="5" height="154" rx="2.5" fill="#174b3b"/>
-    <text x="88" y="785" class="sans" font-size="9" letter-spacing="0.14em" fill="#174b3b" font-weight="700">THE THREE-ADMIN RULE</text>
-    <text x="88" y="814" class="display" font-size="23" fill="#18231f">Three seats. Permanently.</text>
-    <text x="88" y="838" class="sans" font-size="11" fill="#747f79">Each admin occupies a unique seat: 1, 2 or 3. A fourth insert cannot</text>
-    <text x="88" y="854" class="sans" font-size="11" fill="#747f79">commit because UNIQUE(admin_slot) allows only three non-null values,</text>
-    <text x="88" y="870" class="sans" font-size="11" fill="#747f79">and the CHECK constraint prevents an admin from having a null seat.</text>
-    <rect x="88" y="881" width="113" height="17" rx="8.5" fill="#e7efe9"/>
-    <text x="144" y="893" class="mono badge" fill="#174b3b" text-anchor="middle">DB-ENFORCED</text>
+    <text x="88" y="785" class="sans" font-size="9" letter-spacing="0.14em" fill="#9b3f21" font-weight="700">THREE SEATS · ONE MAIN ADMIN</text>
+    <text x="88" y="814" class="display" font-size="23" fill="#18231f">Three seats. One rock.</text>
+    <text x="88" y="838" class="sans" font-size="11" fill="#747f79">Seat 1 belongs to the protected main admin. Seats 2–3 can be hired</text>
+    <text x="88" y="854" class="sans" font-size="11" fill="#747f79">and released. UNIQUE(admin_slot) caps admins at three; a partial</text>
+    <text x="88" y="870" class="sans" font-size="11" fill="#747f79">unique index permits exactly one main admin.</text>
+    <rect x="88" y="881" width="139" height="17" rx="8.5" fill="#fae9e7"/>
+    <text x="157.5" y="893" class="mono badge" fill="#9b3f21" text-anchor="middle">MAIN ADMIN PROTECTED</text>
   </g>
 
   <!-- Legend -->
@@ -260,6 +266,6 @@
     <text x="1032" y="960">audit relation</text>
 
     <text x="1328" y="942" text-anchor="end" fill="#98a19c">UTC timestamps · naive storage</text>
-    <text x="1328" y="960" text-anchor="end" fill="#98a19c">Daymark data model · 2026</text>
+    <text x="1328" y="960" text-anchor="end" fill="#98a19c">YONJIZ · ينجز data model · 2026</text>
   </g>
 </svg>

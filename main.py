@@ -1,5 +1,5 @@
-"""Daymark — a focused todo workspace with a calendar, live clock and
-three-seat administrator console."""
+"""YONJIZ / ينجز — a focused todo workspace with a calendar, live clock,
+three-seat administrator console and one protected main admin."""
 
 from __future__ import annotations
 

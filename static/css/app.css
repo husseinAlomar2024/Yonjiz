@@ -1,5 +1,5 @@
 /* =========================================================
-   Daymark — visual system
+   YONJIZ · ينجز — visual system
    Warm paper, deep forest, terracotta accents.
    ========================================================= */
 
@@ -381,14 +381,22 @@ code {
    ========================================================= */
 
 .brand {
-    display: inline-flex;
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
     align-items: center;
-    gap: 11px;
+    justify-content: start;
+    justify-items: start;
+    width: fit-content;
+    max-width: 100%;
+    column-gap: 11px;
     flex: 0 0 auto;
 }
 
 .brand-mark {
     display: grid;
+    grid-row: 1 / span 2;
+    grid-column: 1;
     place-items: center;
     width: 36px;
     height: 36px;
@@ -404,6 +412,9 @@ code {
 }
 
 .brand-word {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
     font-family: var(--font-display);
     font-size: 1.52rem;
     font-weight: 600;
@@ -415,8 +426,24 @@ code {
     color: var(--clay);
 }
 
+.brand-arabic {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    font-family: "Segoe UI", Tahoma, "Arabic Typesetting", sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: 0;
+    color: #53625b;
+}
+
 .brand-on-dark {
     color: #fffdf6;
+}
+
+.brand-on-dark .brand-arabic {
+    color: rgba(255, 253, 246, 0.72);
 }
 
 .brand-mark-light {
@@ -1779,6 +1806,11 @@ code {
 
 .avatar-admin {
     background: var(--clay);
+}
+
+.avatar-primary {
+    background: #9b3f21;
+    box-shadow: 0 0 0 2px var(--clay-soft);
 }
 
 .avatar-sm {
@@ -3376,6 +3408,18 @@ code {
     border-top: 2px solid var(--forest);
 }
 
+.seat-card.is-primary {
+    border-color: #e3c4b5;
+    border-top: 2px solid var(--clay);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(196, 102, 66, 0.09), transparent 12rem),
+        var(--paper);
+}
+
+.seat-card.is-primary .seat-number {
+    color: var(--clay);
+}
+
 .seat-card.is-open {
     border-style: dashed;
     background: rgba(255, 253, 248, 0.55);
@@ -3410,6 +3454,11 @@ code {
 .status-admin {
     background: var(--forest-wash);
     color: var(--forest);
+}
+
+.status-primary {
+    background: var(--clay-soft);
+    color: #9b3f21;
 }
 
 .status-open {
@@ -3463,6 +3512,26 @@ code {
     font-weight: 750;
     letter-spacing: 0.03em;
     text-transform: uppercase;
+}
+
+.primary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--clay-soft);
+    color: #9b3f21;
+    font-size: 0.5rem;
+    font-weight: 750;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.primary-badge .icon,
+.protected-label .icon {
+    width: 10px;
+    height: 10px;
 }
 
 .seat-card-foot .text-button {
@@ -3742,9 +3811,26 @@ code {
     color: #fffdf6;
 }
 
+.role-primary {
+    align-items: center;
+    gap: 4px;
+    background: var(--clay);
+    color: #fffdf6;
+}
+
 .role-user {
     background: var(--paper-tint);
     color: var(--muted);
+}
+
+.protected-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #9b3f21;
+    font-size: 0.57rem;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .status-dot {

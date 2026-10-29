@@ -45,6 +45,7 @@ def create_user(
     email: str | None = None,
     role: str = "user",
     admin_slot: int | None = None,
+    primary: bool = False,
     active: bool = True,
 ) -> User:
     session = SessionLocal()
@@ -57,6 +58,7 @@ def create_user(
             hashed_password=hash_password(password),
             role=role,
             admin_slot=admin_slot,
+            is_primary_admin=primary,
             is_active=active,
         )
         session.add(user)

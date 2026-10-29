@@ -1,4 +1,4 @@
--- Daymark database schema — SQLite
+-- YONJIZ · ينجز database schema — SQLite
 -- This is a full, from-scratch schema for the SQLite database used by default.
 -- For PostgreSQL, use docs/postgres_schema.sql.
 --
@@ -7,6 +7,11 @@
 --   2. admin_slot is UNIQUE, so no two accounts can share a seat.
 --   3. A CHECK constraint refuses an "admin" without a valid seat.
 -- The result is at most three admins, even for direct SQL inserts.
+--
+-- The protected main admin:
+--   1. is_primary_admin = 1 marks the one main admin.
+--   2. A partial unique index permits only one such row.
+--   3. A CHECK requires that main admin to be active and in seat 1.
 
 PRAGMA foreign_keys = ON;
 
@@ -22,6 +27,7 @@ CREATE TABLE users (
     is_active       BOOLEAN      NOT NULL DEFAULT 1,
     role            VARCHAR(20)  NOT NULL DEFAULT 'user',
     admin_slot      INTEGER,
+    is_primary_admin BOOLEAN     NOT NULL DEFAULT 0,
     phone_number    VARCHAR(25),
     created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_at   DATETIME,
@@ -35,10 +41,17 @@ CREATE TABLE users (
         OR
         (role = 'user' AND admin_slot IS NULL)
     ),
+    CONSTRAINT ck_users_primary_admin CHECK (
+        NOT is_primary_admin
+        OR (role = 'admin' AND admin_slot = 1 AND is_active)
+    ),
     CONSTRAINT uq_users_admin_slot UNIQUE (admin_slot)
 );
 
 CREATE INDEX ix_users_role_admin_slot ON users (role, admin_slot);
+CREATE UNIQUE INDEX uq_users_single_primary_admin
+    ON users (is_primary_admin)
+    WHERE is_primary_admin = 1;
 
 CREATE TABLE todos (
     id           INTEGER       NOT NULL,

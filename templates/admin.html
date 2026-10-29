@@ -7,11 +7,12 @@
 <header class="app-topbar admin-topbar">
     <div class="app-topbar-inner">
         <div class="topbar-brand-group">
-            <a class="brand" href="/" aria-label="{{ app_name }} home">
+            <a class="brand" href="/" aria-label="{{ app_name }} {{ app_name_ar }} home">
                 <span class="brand-mark" aria-hidden="true">
                     <svg viewBox="0 0 32 32"><path d="M9 7.5h9.2a7.5 7.5 0 0 1 0 15H9v-15Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M13 12.5h5.1a2.5 2.5 0 0 1 0 5H13v-5Z" fill="currentColor"/></svg>
                 </span>
                 <span class="brand-word">{{ app_name }}<span>.</span></span>
+                <span class="brand-arabic" lang="ar" dir="rtl">{{ app_name_ar }}</span>
             </a>
             <span class="admin-divider" aria-hidden="true"></span>
             <span class="admin-context">Admin console</span>
@@ -27,7 +28,7 @@
                 <span class="avatar avatar-admin">{{ user.initials }}</span>
                 <span class="user-chip-copy">
                     <strong>{{ user.first_name }}</strong>
-                    <small>Admin · seat {{ user.admin_slot }}</small>
+                    <small>{% if user.is_primary_admin %}Main admin{% else %}Admin · seat {{ user.admin_slot }}{% endif %}</small>
                 </span>
             </div>
             <form action="/auth/logout" method="post" class="inline-form">
@@ -44,7 +45,7 @@
         <div>
             <p class="eyebrow"><span class="eyebrow-line"></span>Control room</p>
             <h1>The people and<br><em>the work.</em></h1>
-            <p class="admin-lede">A compact view of every account and task. Administrator access is deliberately limited to three seats.</p>
+            <p class="admin-lede">A compact view of every account and task. Administrator access is limited to three seats, with one protected main admin.</p>
         </div>
         <div class="seat-meter" aria-label="{{ admin_count }} of {{ admin_limit }} admin seats occupied">
             <div class="seat-meter-head">
@@ -81,18 +82,20 @@
     <section class="seat-section" aria-labelledby="seat-heading">
         <div class="section-heading-row">
             <div>
-                <p class="panel-kicker">The three-seat rule</p>
+                <p class="panel-kicker">Three seats · one protected main admin</p>
                 <h2 id="seat-heading">Who holds the keys</h2>
             </div>
-            <p class="section-note"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> Enforced by a database constraint, not a preference.</p>
+            <p class="section-note"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> The main admin cannot be demoted, deactivated or deleted.</p>
         </div>
 
         <div class="seat-grid">
             {% for seat in admin_seats %}
-            <article class="seat-card{% if seat.occupied %} is-filled{% else %} is-open{% endif %}">
+            <article class="seat-card{% if seat.occupied %} is-filled{% endif %}{% if seat.primary %} is-primary{% endif %}{% if not seat.occupied %} is-open{% endif %}">
                 <div class="seat-card-head">
                     <span class="seat-number">Seat {{ "%02d" | format(seat.slot) }}</span>
-                    {% if seat.occupied %}
+                    {% if seat.primary %}
+                    <span class="status-badge status-primary"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> Main admin</span>
+                    {% elif seat.occupied %}
                     <span class="status-badge status-admin"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-shield"></use></svg> Occupied</span>
                     {% else %}
                     <span class="status-badge status-open">Available</span>
@@ -100,7 +103,7 @@
                 </div>
                 {% if seat.occupied %}
                 <div class="seat-person">
-                    <span class="avatar avatar-lg">{{ seat.user.initials }}</span>
+                    <span class="avatar avatar-lg{% if seat.primary %} avatar-primary{% endif %}">{{ seat.user.initials }}</span>
                     <div>
                         <strong>{{ seat.user.full_name }}</strong>
                         <span>@{{ seat.user.username }}</span>
@@ -108,7 +111,9 @@
                 </div>
                 <div class="seat-card-foot">
                     <span class="seat-since">Since {{ seat.user.created_at | utc_label("%b %Y") }}</span>
-                    {% if seat.user.id == user.id %}
+                    {% if seat.primary %}
+                    <span class="primary-badge"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> Protected</span>
+                    {% elif seat.user.id == user.id %}
                     <span class="you-badge">That’s you</span>
                     {% else %}
                     <form action="/admin/users/{{ seat.user.id }}/role" method="post" class="inline-form" data-confirm="Demote @{{ seat.user.username }} and release this seat?">
@@ -181,7 +186,7 @@
                         <tr data-search="{{ (person.full_name ~ ' ' ~ person.username ~ ' ' ~ person.email) | lower }}">
                             <td data-label="Person">
                                 <div class="table-person">
-                                    <span class="avatar avatar-sm{% if person.role == 'admin' %} avatar-admin{% endif %}">{{ person.initials }}</span>
+                                    <span class="avatar avatar-sm{% if person.role == 'admin' %} avatar-admin{% endif %}{% if person.is_primary_admin %} avatar-primary{% endif %}">{{ person.initials }}</span>
                                     <div>
                                         <strong>{{ person.full_name }}{% if person.id == user.id %}<span class="self-mark">you</span>{% endif %}</strong>
                                         <span>@{{ person.username }} · {{ person.email }}</span>
@@ -189,7 +194,9 @@
                                 </div>
                             </td>
                             <td data-label="Access">
-                                {% if person.role == 'admin' %}
+                                {% if person.is_primary_admin %}
+                                <span class="role-badge role-primary"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> Main admin · {{ person.admin_slot }}</span>
+                                {% elif person.role == 'admin' %}
                                 <span class="role-badge role-admin">Admin · {{ person.admin_slot }}</span>
                                 {% else %}
                                 <span class="role-badge role-user">User</span>
@@ -204,6 +211,9 @@
                             </td>
                             <td class="muted-cell" data-label="Joined"><time datetime="{{ person.created_at | utc_iso }}">{{ person.created_at | utc_label("%b %d, %Y") }}</time></td>
                             <td data-label="Actions">
+                                {% if person.is_primary_admin %}
+                                <span class="protected-label"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> Untouchable</span>
+                                {% else %}
                                 <div class="row-actions">
                                     {% if person.role == 'user' %}
                                     <form action="/admin/users/{{ person.id }}/role" method="post" class="inline-form">
@@ -235,6 +245,7 @@
                                     </form>
                                     {% endif %}
                                 </div>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -242,7 +253,7 @@
                 </table>
             </div>
             <p class="admin-empty-search" id="admin-empty-search" hidden>No people match that search.</p>
-            <p class="admin-panel-foot"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> You cannot demote, deactivate or delete your own account. An admin must be demoted before deactivation.</p>
+            <p class="admin-panel-foot"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> The main admin is permanently protected. Other admins can hire or demote admins, but never the main admin.</p>
         </section>
 
         <div class="admin-lower-grid">
@@ -286,6 +297,7 @@
                     'admin.demote': 'Admin demoted',
                     'admin.developer_access': 'Developer access',
                     'admin.cli': 'Admin created via CLI',
+                    'admin.primary_created': 'Main admin established',
                     'user.activate': 'Account activated',
                     'user.deactivate': 'Account deactivated',
                     'user.delete': 'Account deleted',
@@ -310,7 +322,7 @@
             <section class="safety-card">
                 <span class="safety-icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
                 <h2>Why three?</h2>
-                <p>A small admin group keeps access intentional. The database assigns each admin a unique seat from 1–3, so a fourth admin cannot be created by the interface, an API call or a direct insert.</p>
+                <p>A small admin group keeps access intentional. Seat 1 is reserved for the main admin, who is protected from demotion, deactivation and deletion. Seats 2 and 3 can be hired and released by the admin team — never the main account.</p>
             </section>
         </div>
 

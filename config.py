@@ -52,7 +52,8 @@ def _secret(env_name: str, filename: str) -> str:
     return generated
 
 
-APP_NAME = os.getenv("APP_NAME", "Daymark")
+APP_NAME = os.getenv("APP_NAME", "YONJIZ")
+APP_NAME_AR = os.getenv("APP_NAME_AR", "ينجز")
 SECRET_KEY = _secret("SECRET_KEY", ".secret_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"))

@@ -1,5 +1,5 @@
 -- ============================================================
--- Migrate an older Daymark/PostgreSQL database to this schema.
+-- Migrate an older YONJIZ/PostgreSQL database to this schema.
 -- Target: PostgreSQL 14+. Review against your actual schema first;
 -- this has not been run against your live database.
 --
@@ -10,13 +10,15 @@
 --   UPDATE users SET role = 'user' WHERE id IN (...);
 --
 -- Always take a backup first:
---   pg_dump -Fc your_database > daymark-before-migration.dump
+--   pg_dump -Fc your_database > yonjiz-before-migration.dump
 -- ============================================================
 
 BEGIN;
 
 -- 1. Users: add columns that the new application needs.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_slot SMALLINT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_primary_admin BOOLEAN
+    DEFAULT FALSE NOT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITHOUT TIME ZONE
     DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC');
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP WITHOUT TIME ZONE;
@@ -67,6 +69,26 @@ ALTER TABLE users ADD CONSTRAINT ck_users_admin_slot
         (role = 'user' AND admin_slot IS NULL)
     );
 ALTER TABLE users ADD CONSTRAINT uq_users_admin_slot UNIQUE (admin_slot);
+
+-- Optional but recommended: designate one existing seat-1 admin as the
+-- protected main admin. Replace the username, then uncomment:
+--
+-- UPDATE users SET is_primary_admin = TRUE WHERE username = 'hussein_alomar';
+--
+-- If you do not create a main admin now, run:
+--   python manage.py create-main-admin
+-- after the migration instead.
+
+ALTER TABLE users DROP CONSTRAINT IF EXISTS ck_users_primary_admin;
+ALTER TABLE users ADD CONSTRAINT ck_users_primary_admin
+    CHECK (
+        NOT is_primary_admin
+        OR (role = 'admin' AND admin_slot = 1 AND is_active)
+    );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_users_single_primary_admin
+    ON users (is_primary_admin)
+    WHERE is_primary_admin;
 
 -- Drop old unique constraints only if they differ; the new schema still keeps
 -- email and username unique. These statements are safe to skip if your existing
@@ -159,6 +181,7 @@ CREATE INDEX IF NOT EXISTS ix_admin_audit_created_at ON admin_audit (created_at)
 COMMIT;
 
 -- Verification:
---   SELECT id, username, role, admin_slot FROM users ORDER BY admin_slot NULLS LAST;
+--   SELECT id, username, role, admin_slot, is_primary_admin
+--   FROM users ORDER BY admin_slot NULLS LAST;
 --   SELECT COUNT(*) AS admin_count FROM users WHERE role = 'admin';  -- must be <= 3
 --   SELECT id, title, deadline FROM todos ORDER BY id;

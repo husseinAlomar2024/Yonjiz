@@ -1,6 +1,6 @@
-# Daymark — database design
+# YONJIZ · ينجز — database design
 
-![Daymark ER diagram](er_diagram.png)
+![YONJIZ ER diagram](er_diagram.png)
 
 The editable source is [er_diagram.svg](er_diagram.svg). The runnable schemas are [schema.sql](schema.sql) (SQLite) and [postgres_schema.sql](postgres_schema.sql) (PostgreSQL).
 
@@ -8,7 +8,7 @@ The editable source is [er_diagram.svg](er_diagram.svg). The runnable schemas ar
 
 | Entity | Purpose | Key rules |
 | --- | --- | --- |
-| `users` | Accounts, authentication, roles and admin seats | `email` and `username` are unique. `role` is `user` or `admin`. An admin must hold one unique seat (`admin_slot` 1–3). |
+| `users` | Accounts, authentication, roles and admin seats | `email` and `username` are unique. `role` is `user` or `admin`. An admin must hold one unique seat (`admin_slot` 1–3). Exactly one admin can be the protected main admin in seat 1. |
 | `todos` | A user's tasks | `owner_id` references `users.id` and cascades on delete. `deadline` is nullable. `priority` is 1–5. |
 | `admin_audit` | A lightweight trail of sensitive admin actions | `actor_id` is nullable and becomes `NULL` if the actor is deleted; the human-readable label remains. Appends only in the UI. |
 
@@ -36,6 +36,7 @@ erDiagram
         boolean is_active
         string role "user or admin"
         integer admin_slot UK "NULL for users; 1-3 for admins"
+        boolean is_primary_admin "one protected main admin in seat 1"
         string phone_number "nullable"
         datetime created_at
         datetime last_login_at "nullable"
@@ -69,12 +70,19 @@ The application checks the number of seats before promoting someone, but the app
 
 ```sql
 admin_slot INTEGER,                    -- NULL for regular users
+is_primary_admin BOOLEAN NOT NULL DEFAULT 0,
 CONSTRAINT uq_users_admin_slot UNIQUE (admin_slot),
 CONSTRAINT ck_users_admin_slot CHECK (
     (role = 'admin' AND admin_slot IS NOT NULL AND admin_slot BETWEEN 1 AND 3)
     OR
     (role = 'user' AND admin_slot IS NULL)
-)
+),
+CONSTRAINT ck_users_primary_admin CHECK (
+    NOT is_primary_admin
+    OR (role = 'admin' AND admin_slot = 1 AND is_active)
+),
+CONSTRAINT uq_users_single_primary_admin
+    UNIQUE (is_primary_admin) WHERE is_primary_admin = 1
 ```
 
 Why this works:
@@ -100,6 +108,25 @@ The old `role = 'admin'` string alone was not enough. Before this schema, any di
 
 Self-protection rules: an admin cannot demote, deactivate or delete their own account, and the last admin cannot be removed.
 
+## The protected main admin
+
+`users.is_primary_admin` marks the one permanent main admin.
+
+- Seat 1 is reserved for that account.
+- A partial unique index (`WHERE is_primary_admin = 1`) allows only one such row.
+- A `CHECK` requires the main admin to be active, role `admin`, and `admin_slot = 1`.
+- No other admin can demote, deactivate or delete this account. The rule is enforced in `admin_service.py`, not only by hiding buttons.
+- The main admin can promote a user to admin and demote another admin; those are the “hire” and “kick” actions.
+- The main admin cannot remove itself either, which keeps the workspace from ending up without its anchor.
+
+Bootstrap it once with:
+
+```powershell
+python manage.py create-main-admin
+```
+
+Existing installations can designate one seat-1 admin with the SQL in [migrate_existing_postgres.sql](migrate_existing_postgres.sql).
+
 ## Optional deadlines
 
 `todos.deadline` is deliberately nullable:
@@ -123,7 +150,7 @@ If you are retrofitting the original project (or your own copy) rather than usin
 
 | File | Edit |
 | --- | --- |
-| `models.py` | Define one `User` model (the original file had `Users` commented out while `auth.py` imported it) and one `Todo` model (the original file defined `Todos` twice). Add `Todo.deadline = Column(DateTime, nullable=True)`, `created_at`, `updated_at`, `completed_at`; add `User.admin_slot`, the check constraint and the unique constraint. |
+| `models.py` | Define one `User` model (the original file had `Users` commented out while `auth.py` imported it) and one `Todo` model (the original file defined `Todos` twice). Add `Todo.deadline = Column(DateTime, nullable=True)`, `created_at`, `updated_at`, `completed_at`; add `User.admin_slot`, `User.is_primary_admin`, the check constraints and the unique constraints. |
 | `docs/schema.sql` / `docs/postgres_schema.sql` | Create the three tables and their indexes. |
 | `docs/migrate_existing_postgres.sql` | Apply the columns and constraints to an existing PostgreSQL database. |
 | `database.py` | Point `DATABASE_URL` at the database. The supplied app used a hard-coded PostgreSQL URL; this version reads `DATABASE_URL` and defaults to local SQLite. |
