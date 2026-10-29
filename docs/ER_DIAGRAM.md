@@ -80,9 +80,11 @@ CONSTRAINT ck_users_admin_slot CHECK (
 CONSTRAINT ck_users_primary_admin CHECK (
     NOT is_primary_admin
     OR (role = 'admin' AND admin_slot = 1 AND is_active)
-),
-CONSTRAINT uq_users_single_primary_admin
-    UNIQUE (is_primary_admin) WHERE is_primary_admin = 1
+);
+
+CREATE UNIQUE INDEX uq_users_single_primary_admin
+    ON users (is_primary_admin)
+    WHERE is_primary_admin = 1;
 ```
 
 Why this works:
