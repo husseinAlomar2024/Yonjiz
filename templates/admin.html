@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% block title %}Admin console · {{ app_name }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block body %}
+<header class="app-topbar admin-topbar">
+    <div class="app-topbar-inner">
+        <div class="topbar-brand-group">
+            <a class="brand" href="/" aria-label="{{ app_name }} home">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 32 32"><path d="M9 7.5h9.2a7.5 7.5 0 0 1 0 15H9v-15Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M13 12.5h5.1a2.5 2.5 0 0 1 0 5H13v-5Z" fill="currentColor"/></svg>
+                </span>
+                <span class="brand-word">{{ app_name }}<span>.</span></span>
+            </a>
+            <span class="admin-divider" aria-hidden="true"></span>
+            <span class="admin-context">Admin console</span>
+        </div>
+
+        <nav class="app-nav" aria-label="Admin navigation">
+            <a class="app-nav-link" href="/todos">Workspace</a>
+            <a class="app-nav-link is-active" href="/admin"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-shield"></use></svg> Admin</a>
+        </nav>
+
+        <div class="app-user">
+            <div class="user-chip">
+                <span class="avatar avatar-admin">{{ user.initials }}</span>
+                <span class="user-chip-copy">
+                    <strong>{{ user.first_name }}</strong>
+                    <small>Admin · seat {{ user.admin_slot }}</small>
+                </span>
+            </div>
+            <form action="/auth/logout" method="post" class="inline-form">
+                <button class="icon-button topbar-logout" type="submit" title="Log out" aria-label="Log out">
+                    <svg class="icon" aria-hidden="true"><use href="#icon-logout"></use></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<main class="admin-shell" id="main">
+    <header class="admin-hero">
+        <div>
+            <p class="eyebrow"><span class="eyebrow-line"></span>Control room</p>
+            <h1>The people and<br><em>the work.</em></h1>
+            <p class="admin-lede">A compact view of every account and task. Administrator access is deliberately limited to three seats.</p>
+        </div>
+        <div class="seat-meter" aria-label="{{ admin_count }} of {{ admin_limit }} admin seats occupied">
+            <div class="seat-meter-head">
+                <span>Admin seats</span>
+                <strong>{{ admin_count }}<span>/{{ admin_limit }}</span></strong>
+            </div>
+            <div class="seat-meter-track">
+                {% for slot in range(1, admin_limit + 1) %}
+                <span class="seat-meter-segment{% if slot <= admin_count %} is-filled{% endif %}"></span>
+                {% endfor %}
+            </div>
+            <p>{{ admin_limit - admin_count }} seat{% if admin_limit - admin_count != 1 %}s{% endif %} available</p>
+        </div>
+    </header>
+
+    {% if message %}
+    <div class="flash flash-{{ 'error' if message_kind == 'error' else 'success' }} admin-flash" role="status">
+        <svg class="icon" aria-hidden="true"><use href="#icon-{{ 'alert' if message_kind == 'error' else 'check' }}"></use></svg>
+        <span>{{ message }}</span>
+    </div>
+    {% endif %}
+
+    {% if welcome %}
+    <div class="welcome-banner">
+        <span class="welcome-icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
+        <div>
+            <strong>The developer door is open.</strong>
+            <p>You now hold an administrator seat. Everything is audited below.</p>
+        </div>
+        <a class="text-button" href="/todos">Back to workspace <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a>
+    </div>
+    {% endif %}
+
+    <section class="seat-section" aria-labelledby="seat-heading">
+        <div class="section-heading-row">
+            <div>
+                <p class="panel-kicker">The three-seat rule</p>
+                <h2 id="seat-heading">Who holds the keys</h2>
+            </div>
+            <p class="section-note"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> Enforced by a database constraint, not a preference.</p>
+        </div>
+
+        <div class="seat-grid">
+            {% for seat in admin_seats %}
+            <article class="seat-card{% if seat.occupied %} is-filled{% else %} is-open{% endif %}">
+                <div class="seat-card-head">
+                    <span class="seat-number">Seat {{ "%02d" | format(seat.slot) }}</span>
+                    {% if seat.occupied %}
+                    <span class="status-badge status-admin"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-shield"></use></svg> Occupied</span>
+                    {% else %}
+                    <span class="status-badge status-open">Available</span>
+                    {% endif %}
+                </div>
+                {% if seat.occupied %}
+                <div class="seat-person">
+                    <span class="avatar avatar-lg">{{ seat.user.initials }}</span>
+                    <div>
+                        <strong>{{ seat.user.full_name }}</strong>
+                        <span>@{{ seat.user.username }}</span>
+                    </div>
+                </div>
+                <div class="seat-card-foot">
+                    <span class="seat-since">Since {{ seat.user.created_at | utc_label("%b %Y") }}</span>
+                    {% if seat.user.id == user.id %}
+                    <span class="you-badge">That’s you</span>
+                    {% else %}
+                    <form action="/admin/users/{{ seat.user.id }}/role" method="post" class="inline-form" data-confirm="Demote @{{ seat.user.username }} and release this seat?">
+                        <input type="hidden" name="action" value="demote">
+                        <button class="text-button text-button-danger" type="submit">Demote</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="seat-empty">
+                    <span class="seat-empty-icon"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg></span>
+                    <strong>An open seat</strong>
+                    <p>Promote a member from the directory below.</p>
+                </div>
+                <div class="seat-card-foot">
+                    <span class="seat-since">Waiting for the right person</span>
+                    <span class="seat-slot-label">Slot {{ seat.slot }}</span>
+                </div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="admin-kpis" aria-label="Workspace totals">
+        <article class="admin-kpi">
+            <span class="kpi-icon"><svg class="icon" aria-hidden="true"><use href="#icon-users"></use></svg></span>
+            <div><span>People</span><strong>{{ users | length }}</strong><small>{{ active_users }} active</small></div>
+        </article>
+        <article class="admin-kpi">
+            <span class="kpi-icon"><svg class="icon" aria-hidden="true"><use href="#icon-list"></use></svg></span>
+            <div><span>All tasks</span><strong>{{ total_todos }}</strong><small>across every account</small></div>
+        </article>
+        <article class="admin-kpi">
+            <span class="kpi-icon"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+            <div><span>Completed</span><strong>{{ completed_todos }}</strong><small>{% if total_todos %}{{ ((completed_todos / total_todos) * 100) | round | int }}% completion{% else %}no tasks yet{% endif %}</small></div>
+        </article>
+        <article class="admin-kpi kpi-alert">
+            <span class="kpi-icon"><svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg></span>
+            <div><span>Overdue</span><strong>{{ overdue_todos }}</strong><small>past their deadline</small></div>
+        </article>
+    </section>
+
+    <section class="admin-panel admin-users-panel" aria-labelledby="directory-heading">
+            <div class="admin-panel-head">
+                <div>
+                    <p class="panel-kicker">Directory</p>
+                    <h2 id="directory-heading">People</h2>
+                </div>
+                <label class="search-field search-field-small" for="admin-user-search">
+                    <svg class="icon icon-sm" aria-hidden="true"><use href="#icon-search"></use></svg>
+                    <input type="search" id="admin-user-search" placeholder="Find a person" autocomplete="off">
+                </label>
+            </div>
+
+            <div class="table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Person</th>
+                            <th scope="col">Access</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Tasks</th>
+                            <th scope="col">Joined</th>
+                            <th scope="col" class="table-actions-head">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-user-rows">
+                        {% for person in users %}
+                        <tr data-search="{{ (person.full_name ~ ' ' ~ person.username ~ ' ' ~ person.email) | lower }}">
+                            <td data-label="Person">
+                                <div class="table-person">
+                                    <span class="avatar avatar-sm{% if person.role == 'admin' %} avatar-admin{% endif %}">{{ person.initials }}</span>
+                                    <div>
+                                        <strong>{{ person.full_name }}{% if person.id == user.id %}<span class="self-mark">you</span>{% endif %}</strong>
+                                        <span>@{{ person.username }} · {{ person.email }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Access">
+                                {% if person.role == 'admin' %}
+                                <span class="role-badge role-admin">Admin · {{ person.admin_slot }}</span>
+                                {% else %}
+                                <span class="role-badge role-user">User</span>
+                                {% endif %}
+                            </td>
+                            <td data-label="Status">
+                                <span class="status-dot{% if person.is_active %} is-active{% endif %}"></span>
+                                {{ 'Active' if person.is_active else 'Inactive' }}
+                            </td>
+                            <td class="task-cell" data-label="Tasks">
+                                {{ completed_counts.get(person.id, 0) }}<span>/{{ task_counts.get(person.id, 0) }}</span>
+                            </td>
+                            <td class="muted-cell" data-label="Joined"><time datetime="{{ person.created_at | utc_iso }}">{{ person.created_at | utc_label("%b %d, %Y") }}</time></td>
+                            <td data-label="Actions">
+                                <div class="row-actions">
+                                    {% if person.role == 'user' %}
+                                    <form action="/admin/users/{{ person.id }}/role" method="post" class="inline-form">
+                                        <input type="hidden" name="action" value="promote">
+                                        <button class="mini-button" type="submit"
+                                            {% if not free_slots %}disabled title="All three admin seats are occupied"{% elif not person.is_active %}disabled title="Activate this account first"{% else %}title="Give this person an admin seat"{% endif %}>
+                                            <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-shield"></use></svg> Make admin
+                                        </button>
+                                    </form>
+                                    {% elif person.id != user.id %}
+                                    <form action="/admin/users/{{ person.id }}/role" method="post" class="inline-form" data-confirm="Demote @{{ person.username }} and release their admin seat?">
+                                        <input type="hidden" name="action" value="demote">
+                                        <button class="mini-button" type="submit"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-users"></use></svg> Demote</button>
+                                    </form>
+                                    {% endif %}
+
+                                    {% if person.role == 'user' and person.id != user.id %}
+                                    <form action="/admin/users/{{ person.id }}/status" method="post" class="inline-form">
+                                        <input type="hidden" name="action" value="{{ 'deactivate' if person.is_active else 'activate' }}">
+                                        <button class="mini-button mini-button-quiet" type="submit">{{ 'Deactivate' if person.is_active else 'Activate' }}</button>
+                                    </form>
+                                    {% endif %}
+
+                                    {% if person.id != user.id %}
+                                    <form action="/admin/users/{{ person.id }}/delete" method="post" class="inline-form" data-confirm="Permanently delete @{{ person.username }} and all of their tasks? This cannot be undone.">
+                                        <button class="icon-button icon-button-danger icon-button-sm" type="submit" title="Delete account" aria-label="Delete @{{ person.username }}">
+                                            <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-trash"></use></svg>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="admin-empty-search" id="admin-empty-search" hidden>No people match that search.</p>
+            <p class="admin-panel-foot"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> You cannot demote, deactivate or delete your own account. An admin must be demoted before deactivation.</p>
+        </section>
+
+        <div class="admin-lower-grid">
+            <section class="admin-panel" aria-labelledby="recent-tasks-heading">
+                <div class="admin-panel-head admin-panel-head-compact">
+                    <div>
+                        <p class="panel-kicker">Across accounts</p>
+                        <h2 id="recent-tasks-heading">Recent tasks</h2>
+                    </div>
+                    <a class="text-button" href="/todos">Mine <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a>
+                </div>
+                <div class="recent-task-list">
+                    {% for todo in recent_todos %}
+                    <article class="recent-task">
+                        <span class="recent-task-dot priority-dot-{{ todo.priority | priority_key }}"></span>
+                        <div class="recent-task-copy">
+                            <strong>{{ todo.title }}</strong>
+                            <span>@{{ todo.owner.username if todo.owner else 'unknown' }} · {{ 'Done' if todo.complete else ('No deadline' if not todo.deadline else (todo.deadline | utc_label("%b %d, %H:%M UTC"))) }}</span>
+                        </div>
+                        <form action="/admin/todos/{{ todo.id }}/delete" method="post" class="inline-form" data-confirm="Delete “{{ todo.title }}” from this account?">
+                            <button class="icon-button icon-button-danger icon-button-sm" type="submit" title="Delete task" aria-label="Delete task {{ todo.title }}">
+                                <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-trash"></use></svg>
+                            </button>
+                        </form>
+                    </article>
+                    {% else %}
+                    <p class="panel-empty">No tasks have been added yet.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="admin-panel" aria-labelledby="activity-heading">
+                <div class="admin-panel-head admin-panel-head-compact">
+                    <div>
+                        <p class="panel-kicker">Accountability</p>
+                        <h2 id="activity-heading">Recent activity</h2>
+                    </div>
+                </div>
+                {% set action_labels = {
+                    'admin.promote': 'Admin promoted',
+                    'admin.demote': 'Admin demoted',
+                    'admin.developer_access': 'Developer access',
+                    'admin.cli': 'Admin created via CLI',
+                    'user.activate': 'Account activated',
+                    'user.deactivate': 'Account deactivated',
+                    'user.delete': 'Account deleted',
+                    'todo.delete': 'Task deleted'
+                } %}
+                <div class="activity-list">
+                    {% for entry in audit_entries %}
+                    <article class="activity-item">
+                        <span class="activity-mark"></span>
+                        <div>
+                            <strong>{{ action_labels.get(entry.action, entry.action) }}</strong>
+                            {% if entry.target_label %}<p>{{ entry.target_label }}</p>{% endif %}
+                            <span>{{ entry.actor.username if entry.actor else 'System' }} · {{ entry.created_at | utc_label("%b %d, %H:%M UTC") }}</span>
+                        </div>
+                    </article>
+                    {% else %}
+                    <p class="panel-empty">Admin actions will appear here.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="safety-card">
+                <span class="safety-icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
+                <h2>Why three?</h2>
+                <p>A small admin group keeps access intentional. The database assigns each admin a unique seat from 1–3, so a fourth admin cannot be created by the interface, an API call or a direct insert.</p>
+            </section>
+        </div>
+
+    <p class="admin-footer-note">{{ app_name }} · Administrator console · All sensitive actions are recorded.</p>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='/js/admin.js') }}" defer></script>
+{% endblock %}

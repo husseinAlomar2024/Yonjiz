@@ -1,5 +1,25 @@
-.venv/
+# Python
 __pycache__/
+*.py[cod]
+.venv/
+venv/
 .pytest_cache/
-.env
+.coverage
+htmlcov/
+
+# Local database and secrets
 *.db
+*.db-shm
+*.db-wal
+.env
+.secret_key
+.admin_access_key
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Generated verification artifacts
+screenshots/*.png

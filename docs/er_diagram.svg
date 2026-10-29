@@ -1,0 +1,265 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Daymark entity relationship diagram</title>
+  <desc id="desc">Users own many todos. Users perform many admin audit log entries. The users table has a unique admin seat from one to three, guaranteeing no more than three administrators.</desc>
+
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#18231f" flood-opacity="0.09"/>
+    </filter>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#18231f" flood-opacity="0.06"/>
+    </filter>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6f2e9"/>
+      <stop offset="1" stop-color="#efe9dc"/>
+    </linearGradient>
+    <style>
+      .display { font-family: "Palatino Linotype", Palatino, Georgia, serif; }
+      .sans { font-family: "Segoe UI", "Arial", sans-serif; }
+      .mono { font-family: "Cascadia Code", Consolas, monospace; }
+      .muted { fill: #747f79; }
+      .ink { fill: #18231f; }
+      .line { stroke: #b8ad9c; stroke-width: 1.5; fill: none; }
+      .label { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+      .entity-title { font-size: 19px; letter-spacing: 0.12em; font-weight: 700; }
+      .entity-sub { font-size: 10.5px; letter-spacing: 0.04em; }
+      .row-name { font-size: 12.5px; font-weight: 600; fill: #23312c; }
+      .row-type { font-size: 10px; fill: #8a928e; }
+      .badge { font-size: 8.5px; font-weight: 700; letter-spacing: 0.04em; }
+      .rel-label { font-size: 10px; fill: #6d7772; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="1000" fill="url(#canvas)"/>
+  <circle cx="1280" cy="80" r="260" fill="#c46642" opacity="0.035"/>
+  <circle cx="80" cy="900" r="300" fill="#174b3b" opacity="0.035"/>
+
+  <!-- Header -->
+  <g class="sans">
+    <rect x="64" y="48" width="30" height="30" rx="9" fill="#174b3b"/>
+    <path d="M73 56h7.4a5.5 5.5 0 0 1 0 11H73V56Z" fill="none" stroke="#fffdf8" stroke-width="1.8"/>
+    <text x="106" y="69" font-size="19" font-weight="700" fill="#18231f">Daymark</text>
+    <text x="106" y="84" font-size="9.5" letter-spacing="0.18em" fill="#7b8580">DATA MODEL / V1.0</text>
+
+    <text x="64" y="143" class="display" font-size="41" fill="#18231f" letter-spacing="-1.3">Entity relationship diagram</text>
+    <text x="66" y="169" font-size="12.5" fill="#747f79">Three tables. Optional deadlines. A database-level cap of three administrators.</text>
+
+    <rect x="1098" y="55" width="238" height="82" rx="14" fill="#174b3b" filter="url(#softShadow)"/>
+    <text x="1118" y="78" font-size="9" letter-spacing="0.14em" fill="#a9beb5" font-weight="700">ADMIN SEATS</text>
+    <text x="1118" y="106" class="display" font-size="29" fill="#fffdf8">3</text>
+    <text x="1146" y="102" font-size="11" fill="#d7e6dc">maximum</text>
+    <text x="1146" y="117" font-size="8.5" letter-spacing="0.03em" fill="#9fb8ad">UNIQUE + CHECK · DB-ENFORCED</text>
+    <rect x="1118" y="126" width="58" height="4" rx="2" fill="#e7a082"/>
+    <rect x="1182" y="126" width="58" height="4" rx="2" fill="#e7a082" opacity="0.5"/>
+    <rect x="1246" y="126" width="58" height="4" rx="2" fill="#e7a082" opacity="0.5"/>
+  </g>
+
+  <!-- USERS entity -->
+  <g filter="url(#shadow)">
+    <rect x="64" y="214" width="399" height="492" rx="18" fill="#fffdf8" stroke="#e1dacd"/>
+    <path d="M64 232a18 18 0 0 1 18-18h363a18 18 0 0 1 18 18v45H64v-45Z" fill="#174b3b"/>
+    <circle cx="90" cy="244" r="13" fill="#2a6653"/>
+    <path d="M84 239.5h6.5a4.5 4.5 0 0 1 0 9H84v-9Z" fill="none" stroke="#fffdf8" stroke-width="1.6"/>
+    <text x="112" y="247" class="sans entity-title" fill="#fffdf8">USERS</text>
+    <text x="112" y="262" class="sans entity-sub" fill="#b9cec4">accounts, roles &amp; admin seats</text>
+    <text x="416" y="244" class="sans" font-size="9" letter-spacing="0.12em" fill="#c9dbd3" text-anchor="end">1 ACCOUNT</text>
+    <text x="416" y="258" class="sans" font-size="9" letter-spacing="0.12em" fill="#8eaa9e" text-anchor="end">MANY TASKS</text>
+  </g>
+
+  <g class="sans">
+    <!-- rows -->
+    <text x="86" y="294" class="mono row-name" fill="#b9832c">PK</text>
+    <text x="120" y="294" class="mono row-name">id</text>
+    <text x="365" y="294" class="mono row-type" text-anchor="end">INTEGER</text>
+    <line x1="86" y1="304" x2="441" y2="304" stroke="#eee8dd"/>
+
+    <text x="86" y="325" class="mono row-name" fill="#8a928e">UQ</text>
+    <text x="120" y="325" class="mono row-name">email</text>
+    <text x="365" y="325" class="mono row-type" text-anchor="end">VARCHAR(254)</text>
+    <line x1="86" y1="335" x2="441" y2="335" stroke="#eee8dd"/>
+
+    <text x="86" y="356" class="mono row-name" fill="#8a928e">UQ</text>
+    <text x="120" y="356" class="mono row-name">username</text>
+    <text x="365" y="356" class="mono row-type" text-anchor="end">VARCHAR(30)</text>
+    <line x1="86" y1="366" x2="441" y2="366" stroke="#eee8dd"/>
+
+    <text x="120" y="387" class="mono row-name">first_name / last_name</text>
+    <text x="365" y="387" class="mono row-type" text-anchor="end">VARCHAR(60)</text>
+    <line x1="86" y1="397" x2="441" y2="397" stroke="#eee8dd"/>
+
+    <text x="120" y="418" class="mono row-name">hashed_password</text>
+    <text x="365" y="418" class="mono row-type" text-anchor="end">VARCHAR(255)</text>
+    <line x1="86" y1="428" x2="441" y2="428" stroke="#eee8dd"/>
+
+    <text x="120" y="449" class="mono row-name">is_active</text>
+    <text x="365" y="449" class="mono row-type" text-anchor="end">BOOLEAN</text>
+    <line x1="86" y1="459" x2="441" y2="459" stroke="#eee8dd"/>
+
+    <text x="120" y="480" class="mono row-name">role</text>
+    <rect x="198" y="469" width="83" height="16" rx="8" fill="#e7efe9"/>
+    <text x="239" y="480" class="mono badge" fill="#174b3b" text-anchor="middle">user | admin</text>
+    <text x="365" y="480" class="mono row-type" text-anchor="end">VARCHAR(20)</text>
+    <line x1="86" y1="490" x2="441" y2="490" stroke="#eee8dd"/>
+
+    <rect x="80" y="498" width="367" height="32" rx="7" fill="#fbf1d9"/>
+    <text x="86" y="518" class="mono row-name" fill="#8a5b0e">UQ</text>
+    <text x="120" y="518" class="mono row-name">admin_slot</text>
+    <text x="219" y="518" class="mono badge" fill="#9b6b18">1 | 2 | 3</text>
+    <text x="365" y="518" class="mono row-type" text-anchor="end">SMALLINT NULL</text>
+    <line x1="86" y1="538" x2="441" y2="538" stroke="#eee8dd"/>
+
+    <text x="120" y="559" class="mono row-name">phone_number</text>
+    <text x="365" y="559" class="mono row-type" text-anchor="end">VARCHAR(25) NULL</text>
+    <line x1="86" y1="569" x2="441" y2="569" stroke="#eee8dd"/>
+
+    <text x="120" y="590" class="mono row-name">created_at</text>
+    <text x="365" y="590" class="mono row-type" text-anchor="end">TIMESTAMP</text>
+    <line x1="86" y1="600" x2="441" y2="600" stroke="#eee8dd"/>
+
+    <text x="120" y="621" class="mono row-name">last_login_at</text>
+    <text x="365" y="621" class="mono row-type" text-anchor="end">TIMESTAMP NULL</text>
+  </g>
+
+  <g class="sans" font-size="9.5" fill="#8a928e">
+    <text x="86" y="661">CHECK: role IN ('user','admin')</text>
+    <text x="86" y="676">CHECK: admin ⇒ slot 1–3 · user ⇒ slot NULL</text>
+    <text x="86" y="691">UNIQUE(admin_slot) → at most 3 admins</text>
+  </g>
+
+  <!-- TODOS entity -->
+  <g filter="url(#shadow)">
+    <rect x="688" y="214" width="458" height="371" rx="18" fill="#fffdf8" stroke="#e1dacd"/>
+    <path d="M688 232a18 18 0 0 1 18-18h422a18 18 0 0 1 18 18v45H688v-45Z" fill="#c46642"/>
+    <circle cx="714" cy="244" r="13" fill="#d47e5c"/>
+    <path d="M708 238h7v12h-7zM710.5 241h2M710.5 244h2M710.5 247h2" fill="none" stroke="#fffdf8" stroke-width="1.4"/>
+    <text x="736" y="247" class="sans entity-title" fill="#fffdf8">TODOS</text>
+    <text x="736" y="262" class="sans entity-sub" fill="#f4d4c6">the tasks themselves</text>
+    <text x="1128" y="244" class="sans" font-size="9" letter-spacing="0.12em" fill="#f4d4c6" text-anchor="end">OPTIONAL DEADLINE</text>
+    <text x="1128" y="258" class="sans" font-size="9" letter-spacing="0.12em" fill="#eab5a0" text-anchor="end">NULL = OPEN-ENDED</text>
+  </g>
+
+  <g class="sans">
+    <text x="710" y="294" class="mono row-name" fill="#b9832c">PK</text>
+    <text x="744" y="294" class="mono row-name">id</text>
+    <text x="1128" y="294" class="mono row-type" text-anchor="end">INTEGER</text>
+    <line x1="710" y1="304" x2="1128" y2="304" stroke="#eee8dd"/>
+
+    <text x="710" y="325" class="mono row-name" fill="#8a5b0e">FK</text>
+    <text x="744" y="325" class="mono row-name">owner_id</text>
+    <text x="1128" y="325" class="mono row-type" text-anchor="end">INTEGER → users.id</text>
+    <line x1="710" y1="335" x2="1128" y2="335" stroke="#eee8dd"/>
+
+    <text x="744" y="356" class="mono row-name">title</text>
+    <text x="1128" y="356" class="mono row-type" text-anchor="end">VARCHAR(120)</text>
+    <line x1="710" y1="366" x2="1128" y2="366" stroke="#eee8dd"/>
+
+    <text x="744" y="387" class="mono row-name">description</text>
+    <text x="1128" y="387" class="mono row-type" text-anchor="end">VARCHAR(1000)</text>
+    <line x1="710" y1="397" x2="1128" y2="397" stroke="#eee8dd"/>
+
+    <text x="744" y="418" class="mono row-name">priority</text>
+    <text x="821" y="418" class="mono badge" fill="#8a928e">1–5</text>
+    <text x="1128" y="418" class="mono row-type" text-anchor="end">INTEGER</text>
+    <line x1="710" y1="428" x2="1128" y2="428" stroke="#eee8dd"/>
+
+    <text x="744" y="449" class="mono row-name">complete</text>
+    <text x="1128" y="449" class="mono row-type" text-anchor="end">BOOLEAN</text>
+    <line x1="710" y1="459" x2="1128" y2="459" stroke="#eee8dd"/>
+
+    <rect x="702" y="468" width="430" height="33" rx="7" fill="#fbebe2"/>
+    <text x="710" y="489" class="mono row-name" fill="#a14321">◇</text>
+    <text x="744" y="489" class="mono row-name" fill="#8f3c1f">deadline</text>
+    <text x="817" y="489" class="mono badge" fill="#b45634">NULLABLE</text>
+    <text x="1128" y="489" class="mono row-type" text-anchor="end">TIMESTAMP NULL</text>
+    <line x1="710" y1="509" x2="1128" y2="509" stroke="#eee8dd"/>
+
+    <text x="744" y="530" class="mono row-name">created_at / updated_at</text>
+    <text x="1128" y="530" class="mono row-type" text-anchor="end">TIMESTAMP</text>
+    <line x1="710" y1="540" x2="1128" y2="540" stroke="#eee8dd"/>
+
+    <text x="744" y="561" class="mono row-name">completed_at</text>
+    <text x="1128" y="561" class="mono row-type" text-anchor="end">TIMESTAMP NULL</text>
+  </g>
+
+  <g class="sans" font-size="9.5" fill="#8a928e">
+    <text x="710" y="602">CHECK priority 1–5 · FK owner_id ON DELETE CASCADE</text>
+  </g>
+
+  <!-- ADMIN AUDIT -->
+  <g filter="url(#shadow)">
+    <rect x="688" y="646" width="458" height="248" rx="18" fill="#fffdf8" stroke="#e1dacd"/>
+    <path d="M688 664a18 18 0 0 1 18-18h422a18 18 0 0 1 18 18v45H688v-45Z" fill="#33413b"/>
+    <circle cx="714" cy="676" r="13" fill="#4c5d56"/>
+    <path d="M710 671h8v10h-8zM712 675l1.5 1.5 3-3" fill="none" stroke="#fffdf8" stroke-width="1.3"/>
+    <text x="736" y="679" class="sans entity-title" fill="#fffdf8">ADMIN_AUDIT</text>
+    <text x="736" y="694" class="sans entity-sub" fill="#b9c4bf">accountability for sensitive actions</text>
+    <text x="1128" y="676" class="sans" font-size="9" letter-spacing="0.12em" fill="#b9c4bf" text-anchor="end">APPEND-ONLY IN APP</text>
+    <text x="1128" y="690" class="sans" font-size="9" letter-spacing="0.12em" fill="#8b9c95" text-anchor="end">NO UPDATE UI</text>
+  </g>
+
+  <g class="sans">
+    <text x="710" y="736" class="mono row-name" fill="#b9832c">PK</text>
+    <text x="744" y="736" class="mono row-name">id</text>
+    <text x="1128" y="736" class="mono row-type" text-anchor="end">INTEGER</text>
+    <line x1="710" y1="746" x2="1128" y2="746" stroke="#eee8dd"/>
+
+    <text x="710" y="767" class="mono row-name" fill="#8a5b0e">FK</text>
+    <text x="744" y="767" class="mono row-name">actor_id</text>
+    <text x="1128" y="767" class="mono row-type" text-anchor="end">INTEGER → users.id NULL</text>
+    <line x1="710" y1="777" x2="1128" y2="777" stroke="#eee8dd"/>
+
+    <text x="744" y="798" class="mono row-name">action</text>
+    <text x="1128" y="798" class="mono row-type" text-anchor="end">VARCHAR(60)</text>
+    <line x1="710" y1="808" x2="1128" y2="808" stroke="#eee8dd"/>
+
+    <text x="744" y="829" class="mono row-name">target_label</text>
+    <text x="1128" y="829" class="mono row-type" text-anchor="end">VARCHAR(180) NULL</text>
+    <line x1="710" y1="839" x2="1128" y2="839" stroke="#eee8dd"/>
+
+    <text x="744" y="860" class="mono row-name">created_at</text>
+    <text x="1128" y="860" class="mono row-type" text-anchor="end">TIMESTAMP</text>
+  </g>
+
+  <!-- Relationships -->
+  <g>
+    <path d="M463 320 H688" stroke="#6e8f81" stroke-width="2" fill="none"/>
+    <line x1="474" y1="311" x2="474" y2="329" stroke="#6e8f81" stroke-width="2"/>
+    <path d="M688 320 L670 309 M688 320 L670 320 M688 320 L670 331" stroke="#6e8f81" stroke-width="2" fill="none"/>
+    <rect x="525" y="302" width="100" height="22" rx="11" fill="#f6f2e9"/>
+    <text x="575" y="317" class="sans rel-label" text-anchor="middle">owns 1 : N</text>
+
+    <path d="M463 622 H575 Q600 622 600 660 V780 Q600 812 632 812 H688" stroke="#b88972" stroke-width="2" fill="none" stroke-dasharray="2 5" stroke-linecap="round"/>
+    <line x1="474" y1="613" x2="474" y2="631" stroke="#b88972" stroke-width="2"/>
+    <path d="M688 812 L670 801 M688 812 L670 812 M688 812 L670 823" stroke="#b88972" stroke-width="2" fill="none"/>
+    <rect x="510" y="755" width="130" height="22" rx="11" fill="#f6f2e9"/>
+    <text x="575" y="770" class="sans rel-label" text-anchor="middle" fill="#9f6b50">performs 1 : N</text>
+  </g>
+
+  <!-- Callout -->
+  <g filter="url(#softShadow)">
+    <rect x="64" y="756" width="462" height="154" rx="16" fill="#fffdf8" stroke="#e1dacd"/>
+    <rect x="64" y="756" width="5" height="154" rx="2.5" fill="#174b3b"/>
+    <text x="88" y="785" class="sans" font-size="9" letter-spacing="0.14em" fill="#174b3b" font-weight="700">THE THREE-ADMIN RULE</text>
+    <text x="88" y="814" class="display" font-size="23" fill="#18231f">Three seats. Permanently.</text>
+    <text x="88" y="838" class="sans" font-size="11" fill="#747f79">Each admin occupies a unique seat: 1, 2 or 3. A fourth insert cannot</text>
+    <text x="88" y="854" class="sans" font-size="11" fill="#747f79">commit because UNIQUE(admin_slot) allows only three non-null values,</text>
+    <text x="88" y="870" class="sans" font-size="11" fill="#747f79">and the CHECK constraint prevents an admin from having a null seat.</text>
+    <rect x="88" y="881" width="113" height="17" rx="8.5" fill="#e7efe9"/>
+    <text x="144" y="893" class="mono badge" fill="#174b3b" text-anchor="middle">DB-ENFORCED</text>
+  </g>
+
+  <!-- Legend -->
+  <g class="sans" font-size="10" fill="#6d7772">
+    <text x="688" y="942" font-weight="700" fill="#33413b">KEY</text>
+    <text x="728" y="942" class="mono" fill="#b9832c">PK</text><text x="750" y="942">primary key</text>
+    <text x="824" y="942" class="mono" fill="#8a5b0e">FK</text><text x="846" y="942">foreign key</text>
+    <text x="920" y="942" class="mono" fill="#8a928e">UQ</text><text x="942" y="942">unique</text>
+    <line x1="1000" y1="938" x2="1025" y2="938" stroke="#6e8f81" stroke-width="2"/>
+    <text x="1032" y="942">required relation</text>
+    <line x1="1000" y1="956" x2="1025" y2="956" stroke="#b88972" stroke-width="2" stroke-dasharray="2 5"/>
+    <text x="1032" y="960">audit relation</text>
+
+    <text x="1328" y="942" text-anchor="end" fill="#98a19c">UTC timestamps · naive storage</text>
+    <text x="1328" y="960" text-anchor="end" fill="#98a19c">Daymark data model · 2026</text>
+  </g>
+</svg>

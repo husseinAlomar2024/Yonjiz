@@ -1,0 +1,189 @@
+# Daymark
+
+A complete rebuild of the supplied FastAPI todo app, with a proper interface, a live clock, a deadline calendar, optional task deadlines, and a three-seat administrator console.
+
+The original code is preserved in spirit (FastAPI + SQLAlchemy + Jinja) but the broken pieces are fixed: duplicate `Todos` models, a missing `Users` model, the hard-coded PostgreSQL URL, missing deadline/clock markup, and unrestricted admin promotion.
+
+![Daymark workspace](docs/screenshots/dashboard.png)
+
+## What you get
+
+- **A real UI** — landing page, split-screen auth pages, responsive workspace, designed empty states, accessible dialog, toasts and keyboard focus states.
+- **Live clock** — analog and digital, browser-local timezone, no database dependency.
+- **Deadline calendar** — a month grid with deadline and overdue dots. Click a day to filter the task list. Collapsible on phones.
+- **Optional deadlines** — a switch in every task dialog. Off means `deadline IS NULL`; the task stays entirely open-ended. Editable at any time.
+- **Admin console** — metrics, user directory, promote/demote, activate/deactivate, delete account (with task cascade), delete tasks, recent activity and a visual three-seat meter.
+- **Hard three-admin limit** — each admin takes a unique seat from 1–3. A database `UNIQUE` constraint plus a `CHECK` constraint makes a fourth admin impossible, even through direct SQL.
+- **Developer door** — `/admin/access` + a server-side key promotes your signed-in account without creating a second login. A CLI command is available too.
+- **Auditability** — sensitive admin actions are recorded in `admin_audit`.
+- **No external UI dependencies** — no CDN, no build step, no JavaScript framework. The CSP allows only same-origin assets.
+
+| Landing | Admin console |
+| --- | --- |
+| ![Landing page](docs/screenshots/landing.png) | ![Admin console](docs/screenshots/admin.png) |
+
+## Quick start
+
+Requires Python 3.11+ (verified on 3.13).
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# Optional: create an admin account through the CLI
+python manage.py create-admin
+
+# Optional: add a demo user with sample tasks
+python manage.py seed-demo
+
+uvicorn main:app --reload
+```
+
+Open <http://127.0.0.1:8000>.
+
+The first run creates a local SQLite database (`todo.db`), a persistent JWT secret (`.secret_key`) and a developer key (`.admin_access_key`). These files are git-ignored. In production, set `SECRET_KEY` and `ADMIN_ACCESS_KEY` as environment variables instead.
+
+### Demo login (only if you ran `seed-demo`)
+
+```text
+username: demo
+password: Demo1234!
+```
+
+### Create the first admin
+
+Choose either route:
+
+```powershell
+# A. Interactive CLI
+python manage.py create-admin
+
+# B. Browser door
+python manage.py show-key
+# Log in as your normal account, then open /admin/access and paste the key.
+```
+
+The admin link appears in the top navigation only after the account has the `admin` role. Both routes obey the same three-seat limit.
+
+## The three-admin rule
+
+The limit is enforced in the database, not only in the UI:
+
+```sql
+admin_slot INTEGER,                         -- NULL for regular users
+CONSTRAINT uq_users_admin_slot UNIQUE (admin_slot),
+CONSTRAINT ck_users_admin_slot CHECK (
+    (role = 'admin' AND admin_slot IS NOT NULL AND admin_slot BETWEEN 1 AND 3)
+    OR
+    (role = 'user' AND admin_slot IS NULL)
+)
+```
+
+That means:
+
+- At most three rows can have a non-null `admin_slot`.
+- An admin cannot accidentally exist without a seat.
+- A fourth admin is rejected by both the application and the database.
+- A demoted admin releases their seat immediately.
+- Admins cannot demote, deactivate or delete themselves, and the last admin cannot be removed.
+
+The admin console displays the three seats, occupied or available, and disables promotion when all seats are used. See [docs/ER_DIAGRAM.md](docs/ER_DIAGRAM.md) for the full rationale and SQL.
+
+## Configuration
+
+Copy `.env.example` to `.env` if you want to override the defaults.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | SQLite `todo.db` | Use `postgresql+psycopg://...` for PostgreSQL (install `psycopg[binary]`). |
+| `SECRET_KEY` | generated `.secret_key` | JWT signing key. Set explicitly in production. |
+| `ADMIN_ACCESS_KEY` | generated `.admin_access_key` | Key for `/admin/access`. |
+| `DEVELOPER_EMAIL` | unset | Optional: restrict developer access to one account. |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `480` | Session cookie lifetime. |
+| `COOKIE_SECURE` | `false` | Set `true` behind HTTPS. |
+| `APP_NAME` | `Daymark` | Brand name shown in templates. |
+
+Deadline timestamps are stored as naive UTC, then formatted in the user's local timezone by the browser. Calendar day filtering also uses the local timezone, so a deadline late in the day does not drift across days for the user.
+
+## Tests
+
+```powershell
+python -m pytest -q
+```
+
+The suite covers registration/login, password hashing, inactive accounts, owner-scoped todo CRUD, optional deadlines, developer access, admin self-protection, account/task cascades, audit entries, and the three-admin constraint at both the route and database layers.
+
+## Project layout
+
+```text
+main.py                  FastAPI app, security headers, error pages
+config.py                env/config and generated local secrets
+database.py              engine, session, SQLite pragmas
+models.py                User, Todo, AdminAudit + seat constraints
+schemas.py               Pydantic payloads and UTC serialization
+security.py              bcrypt hashing + JWT
+dependencies.py          current-user / optional-user / admin guards
+admin_service.py         seat allocation and audited admin actions
+manage.py                create-admin, list-admins, show-key, seed-demo
+routers/
+  auth.py                register, login, logout
+  todos.py               workspace page + owner-scoped JSON API
+  admin.py               admin console + developer access
+templates/               Jinja pages and the task-card partial
+static/css/app.css       visual system and responsive layout
+static/js/clock.js       analog + digital clock
+static/js/calendar.js    month grid, deadline dots, date selection
+static/js/dashboard.js   filters, dialog, CRUD, stats, due states
+static/js/admin.js       directory search
+docs/ER_DIAGRAM.md       ER explanation, edits, queries, migration notes
+docs/schema.sql          SQLite schema
+docs/postgres_schema.sql PostgreSQL schema
+docs/migrate_existing_postgres.sql  migration for an older database
+docs/er_diagram.svg/.png rendered ER diagram
+tests/                   pytest suite
+```
+
+## Routes
+
+| Route | Access | Description |
+| --- | --- | --- |
+| `/` | Public | Landing page |
+| `/auth/register-page` | Public | Account creation (always creates a regular user) |
+| `/auth/login-page` | Public | Login |
+| `/auth/token` | Public | JSON bearer token for API clients |
+| `/todos` | Signed in | Workspace |
+| `/api/todos` | Signed in | Create/list-own task API |
+| `/api/todos/{id}` | Owner | Update/delete own task |
+| `/api/todos/{id}/complete` | Owner | Toggle completion |
+| `/admin` | Admin | Admin console |
+| `/admin/access` | Signed in | Developer key gate |
+| `/healthy` | Public | Health check |
+
+## Security notes
+
+- Role is loaded from the database on every request. Demotion takes effect immediately, even with an unexpired token.
+- Passwords are hashed with bcrypt (cost 12); the application never stores plaintext.
+- `registration` ignores any posted role field, so self-promotion is impossible.
+- All task queries are scoped to the owner; a different signed-in user receives 404 for someone else's task.
+- Forms and fetches are same-origin; the session cookie is `HttpOnly` and `SameSite=Lax`. Set `COOKIE_SECURE=true` and serve over HTTPS in production.
+- Security headers include a strict same-origin CSP, `X-Frame-Options: DENY`, `nosniff`, a referrer policy and a restrictive permissions policy.
+- Developer key attempts are rate-limited in-process. For a multi-worker deployment, move the limiter to Redis or put the gate behind your auth proxy.
+
+## Migrating from the original app
+
+The attached project used PostgreSQL with a `users`/`todos` schema that did not match its models. To move that data:
+
+1. Back up the database.
+2. Read [docs/migrate_existing_postgres.sql](docs/migrate_existing_postgres.sql).
+3. Resolve any existing admin accounts before running the script (it deliberately refuses to guess if there are already more than three).
+4. Set `DATABASE_URL` and install `psycopg[binary]`.
+5. Run the migration in a staging copy first, then start the app and sign in with the existing password.
+
+For SQLite, use a fresh `todo.db`; the supplied `testdb.db` was empty. See [docs/ER_DIAGRAM.md](docs/ER_DIAGRAM.md#migration-notes) for the details.
+
+## Design notes
+
+The interface uses a warm paper palette, a deep forest surface, Palatino-style display type and terracotta accents. It is intentionally quiet: no third-party fonts, no animation for its own sake, and a calendar that shows only the dates that are actually yours. All screens are responsive, with a compact clock and a collapsible calendar on phones.
+
+If you want to change the look, start with the custom properties at the top of `static/css/app.css`.

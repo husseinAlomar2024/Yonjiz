@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+{% block title %}My workspace · {{ app_name }}{% endblock %}
+{% block body_class %}dashboard-page{% endblock %}
+
+{% block body %}
+<header class="app-topbar">
+    <div class="app-topbar-inner">
+        <a class="brand" href="/" aria-label="{{ app_name }} home">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32"><path d="M9 7.5h9.2a7.5 7.5 0 0 1 0 15H9v-15Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M13 12.5h5.1a2.5 2.5 0 0 1 0 5H13v-5Z" fill="currentColor"/></svg>
+            </span>
+            <span class="brand-word">{{ app_name }}<span>.</span></span>
+        </a>
+
+        <nav class="app-nav" aria-label="Workspace navigation">
+            <a class="app-nav-link is-active" href="/todos">Workspace</a>
+            {% if user.role == 'admin' %}
+            <a class="app-nav-link" href="/admin"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-shield"></use></svg> Admin</a>
+            {% endif %}
+        </nav>
+
+        <div class="app-user">
+            <div class="user-chip" title="{{ user.full_name }}">
+                <span class="avatar">{{ user.initials }}</span>
+                <span class="user-chip-copy">
+                    <strong>{{ user.first_name }}</strong>
+                    <small>{{ 'Administrator' if user.role == 'admin' else 'Member' }}</small>
+                </span>
+            </div>
+            <form action="/auth/logout" method="post" class="inline-form">
+                <button class="icon-button topbar-logout" type="submit" title="Log out" aria-label="Log out">
+                    <svg class="icon" aria-hidden="true"><use href="#icon-logout"></use></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<main class="dashboard-shell" id="main">
+    <aside class="dashboard-rail">
+        <section class="clock-panel" aria-labelledby="clock-heading">
+            <div class="clock-panel-head">
+                <div>
+                    <p class="panel-kicker panel-kicker-light" id="clock-heading">Local time</p>
+                    <p class="clock-zone" id="clock-zone">Your timezone</p>
+                </div>
+                <span class="live-indicator"><span></span> Live</span>
+            </div>
+
+            <div class="clock-face" id="analog-clock" aria-hidden="true">
+                <span class="clock-numeral n12">12</span>
+                <span class="clock-numeral n3">3</span>
+                <span class="clock-numeral n6">6</span>
+                <span class="clock-numeral n9">9</span>
+                <span class="clock-hand clock-hour" id="clock-hour-hand"></span>
+                <span class="clock-hand clock-minute" id="clock-minute-hand"></span>
+                <span class="clock-hand clock-second" id="clock-second-hand"></span>
+                <span class="clock-pin"></span>
+            </div>
+
+            <div class="digital-clock" aria-live="off">
+                <span class="digital-time" id="clock-time">--:--</span>
+                <span class="digital-aside">
+                    <span class="digital-seconds" id="clock-seconds">--</span>
+                    <span class="digital-period" id="clock-period">--</span>
+                </span>
+            </div>
+            <p class="clock-date" id="clock-date">Loading today’s date…</p>
+        </section>
+
+        <section class="panel calendar-panel" id="deadline-calendar" aria-labelledby="calendar-title">
+            <div class="calendar-heading">
+                <div>
+                    <p class="panel-kicker">Deadline calendar</p>
+                    <h2 id="calendar-title">Month</h2>
+                </div>
+                <div class="calendar-controls">
+                    <button class="icon-button" type="button" id="calendar-prev" aria-label="Previous month">
+                        <svg class="icon" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>
+                    </button>
+                    <button class="icon-button" type="button" id="calendar-next" aria-label="Next month">
+                        <svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+                    </button>
+                </div>
+            </div>
+
+            <button class="calendar-collapse" type="button" id="calendar-toggle" aria-expanded="true" aria-controls="deadline-calendar">
+                <span id="calendar-toggle-label">Hide calendar</span>
+                <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+            </button>
+
+            <div class="calendar-weekdays" aria-hidden="true">
+                <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid" role="grid" aria-labelledby="calendar-title"></div>
+
+            <div class="calendar-footer">
+                <div class="calendar-legend">
+                    <span><i class="legend-dot legend-due"></i> Deadline</span>
+                    <span><i class="legend-dot legend-overdue"></i> Overdue</span>
+                </div>
+                <button class="text-button" type="button" id="calendar-today">Today</button>
+            </div>
+            <button class="clear-date-button" type="button" id="clear-date-filter" hidden>
+                <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-close"></use></svg>
+                Clear selected date
+            </button>
+        </section>
+
+        <section class="panel progress-panel" aria-labelledby="progress-heading">
+            <div class="progress-ring" id="progress-ring" role="img" aria-label="Task completion progress">
+                <span id="progress-value">0%</span>
+            </div>
+            <div class="progress-copy">
+                <p class="panel-kicker" id="progress-heading">Day progress</p>
+                <strong id="progress-title">A fresh start</strong>
+                <p id="progress-detail">Add a task to begin.</p>
+            </div>
+        </section>
+    </aside>
+
+    <section class="workspace" aria-labelledby="workspace-title">
+        <header class="workspace-header">
+            <div>
+                <p class="workspace-date" id="workspace-date">Today</p>
+                <h1 id="workspace-title"><span id="greeting">Hello</span>, <em>{{ user.first_name }}.</em></h1>
+                <p class="workspace-lede">Here’s the shape of your day. Keep it light, or give something a deadline.</p>
+            </div>
+            <button class="button button-primary button-lg new-task-button" type="button" id="open-task-dialog">
+                <svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+                New task
+            </button>
+        </header>
+
+        <div class="stats-row">
+            <article class="stat-card">
+                <span class="stat-label">All tasks</span>
+                <strong class="stat-value" id="stat-total">{{ total }}</strong>
+                <span class="stat-foot">in your workspace</span>
+            </article>
+            <article class="stat-card stat-card-open">
+                <span class="stat-label">Open</span>
+                <strong class="stat-value" id="stat-open">{{ open_count }}</strong>
+                <span class="stat-foot">still in motion</span>
+            </article>
+            <article class="stat-card stat-card-today">
+                <span class="stat-label">Due today</span>
+                <strong class="stat-value" id="stat-today">0</strong>
+                <span class="stat-foot">on today’s list</span>
+            </article>
+            <article class="stat-card stat-card-overdue">
+                <span class="stat-label">Overdue</span>
+                <strong class="stat-value" id="stat-overdue">0</strong>
+                <span class="stat-foot">needs a little care</span>
+            </article>
+        </div>
+
+        <section class="task-panel" aria-labelledby="tasks-heading">
+            <div class="task-panel-head">
+                <div class="task-panel-title">
+                    <h2 id="tasks-heading">Your tasks</h2>
+                    <span class="count-pill" id="task-count">{{ total }}</span>
+                </div>
+                <div class="task-toolbar">
+                    <label class="search-field" for="task-search">
+                        <svg class="icon icon-sm" aria-hidden="true"><use href="#icon-search"></use></svg>
+                        <input type="search" id="task-search" placeholder="Search tasks" autocomplete="off">
+                    </label>
+                    <select id="task-sort" class="select-field" aria-label="Sort tasks">
+                        <option value="smart">Smart order</option>
+                        <option value="deadline">By deadline</option>
+                        <option value="priority">By priority</option>
+                        <option value="newest">Newest first</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="task-filters-row">
+                <div class="filter-tabs" role="group" aria-label="Filter tasks">
+                    <button class="filter-tab is-active" type="button" data-filter="all">All</button>
+                    <button class="filter-tab" type="button" data-filter="open">Open</button>
+                    <button class="filter-tab" type="button" data-filter="complete">Done</button>
+                    <button class="filter-tab" type="button" data-filter="overdue">Overdue</button>
+                </div>
+                <p class="filter-summary" id="filter-summary" aria-live="polite"></p>
+            </div>
+
+            <div class="date-filter-bar" id="date-filter-bar" hidden>
+                <span class="date-filter-label">
+                    <svg class="icon icon-sm" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                    Showing <strong id="date-filter-label">selected day</strong>
+                </span>
+                <button class="text-button" type="button" id="date-filter-clear">Show all dates</button>
+            </div>
+
+            <div class="task-list" id="task-list">
+                {% for todo in todos %}
+                    {% include "partials/task_card.html" %}
+                {% endfor %}
+            </div>
+
+            <div class="empty-state" id="empty-state" {% if todos %}hidden{% endif %}>
+                <span class="empty-icon"><svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg></span>
+                <h3 id="empty-title">A clear page.</h3>
+                <p id="empty-copy">Add the first thing you want to make room for. A deadline is entirely optional.</p>
+                <button class="button button-secondary" type="button" id="empty-add">Add your first task</button>
+            </div>
+
+            <div class="no-results" id="no-results" hidden>
+                <p>Nothing matches that view.</p>
+                <button class="text-button" type="button" id="reset-view">Reset filters</button>
+            </div>
+        </section>
+
+        <p class="workspace-footnote">
+            {% if user.role == 'admin' %}
+            You have administrator access. <a href="/admin">Open the admin console</a>.
+            {% else %}
+            Tip: turn on the deadline switch only when a task truly needs a date.
+            <span class="footnote-separator" aria-hidden="true">·</span>
+            <a href="/admin/access" class="developer-link">Developer access</a>
+            {% endif %}
+        </p>
+    </section>
+</main>
+
+<dialog class="task-dialog" id="task-dialog" aria-labelledby="task-dialog-title">
+    <form id="task-form" class="task-form" novalidate>
+        <div class="dialog-head">
+            <div>
+                <p class="panel-kicker" id="task-dialog-kicker">A new intention</p>
+                <h2 id="task-dialog-title">Add a task</h2>
+            </div>
+            <button class="icon-button" type="button" data-close-dialog aria-label="Close dialog">
+                <svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+            </button>
+        </div>
+
+        <input type="hidden" id="task-id">
+
+        <div class="form-field">
+            <label for="task-title">Task title</label>
+            <input id="task-title" name="title" type="text" maxlength="120" required autocomplete="off" placeholder="What needs doing?">
+        </div>
+
+        <div class="form-field">
+            <label for="task-description">Notes <span class="optional">optional</span></label>
+            <textarea id="task-description" name="description" maxlength="1000" rows="3" placeholder="A little context, if it helps."></textarea>
+        </div>
+
+        <fieldset class="priority-fieldset">
+            <legend>Priority</legend>
+            <div class="priority-options">
+                <label class="priority-choice priority-choice-1">
+                    <input type="radio" name="priority" value="1">
+                    <span><i></i>Very low</span>
+                </label>
+                <label class="priority-choice priority-choice-2">
+                    <input type="radio" name="priority" value="2">
+                    <span><i></i>Low</span>
+                </label>
+                <label class="priority-choice priority-choice-3">
+                    <input type="radio" name="priority" value="3" checked>
+                    <span><i></i>Medium</span>
+                </label>
+                <label class="priority-choice priority-choice-4">
+                    <input type="radio" name="priority" value="4">
+                    <span><i></i>High</span>
+                </label>
+                <label class="priority-choice priority-choice-5">
+                    <input type="radio" name="priority" value="5">
+                    <span><i></i>Critical</span>
+                </label>
+            </div>
+        </fieldset>
+
+        <div class="deadline-setting">
+            <div class="deadline-setting-copy">
+                <label for="has-deadline">Set a deadline</label>
+                <p>Optional. Leave this off for an open-ended task.</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="has-deadline">
+                <span class="switch-track" aria-hidden="true"><span></span></span>
+                <span class="sr-only">Enable a deadline for this task</span>
+            </label>
+        </div>
+
+        <div class="form-field deadline-input-wrap is-disabled" id="deadline-input-wrap">
+            <label for="task-deadline">Deadline date &amp; time</label>
+            <input id="task-deadline" type="datetime-local" disabled>
+            <span class="field-hint">Shown in your local timezone. You can change or remove it later.</span>
+        </div>
+
+        <p class="form-error" id="task-form-error" role="alert" hidden></p>
+
+        <div class="dialog-actions">
+            <button class="button button-ghost" type="button" data-close-dialog>Cancel</button>
+            <button class="button button-primary" type="submit" id="task-submit">Add task</button>
+        </div>
+    </form>
+</dialog>
+
+<template id="task-card-template">
+    <article class="task-card">
+        <button class="task-toggle" type="button" data-action="toggle" aria-pressed="false">
+            <svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+        </button>
+        <div class="task-body">
+            <div class="task-heading">
+                <h3 class="task-title"></h3>
+                <span class="priority-pill"></span>
+            </div>
+            <p class="task-description"></p>
+            <div class="task-meta">
+                <span class="meta-item js-deadline-item">
+                    <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                    <span class="js-deadline-label"></span>
+                </span>
+                <span class="deadline-state" data-deadline-state></span>
+                <span class="meta-item meta-created">
+                    <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                    <span class="js-created-label"></span>
+                </span>
+            </div>
+        </div>
+        <div class="task-actions">
+            <button class="icon-button" type="button" data-action="edit" title="Edit task">
+                <svg class="icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+            </button>
+            <button class="icon-button icon-button-danger" type="button" data-action="delete" title="Delete task">
+                <svg class="icon" aria-hidden="true"><use href="#icon-trash"></use></svg>
+            </button>
+        </div>
+    </article>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='/js/clock.js') }}" defer></script>
+<script src="{{ url_for('static', path='/js/calendar.js') }}" defer></script>
+<script src="{{ url_for('static', path='/js/dashboard.js') }}" defer></script>
+{% endblock %}

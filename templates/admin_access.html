@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Developer access · {{ app_name }}{% endblock %}
+{% block body_class %}auth-page developer-page{% endblock %}
+
+{% block head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+
+{% block body %}
+<main class="auth-shell" id="main">
+    <section class="auth-aside developer-aside">
+        <a class="brand brand-on-dark" href="/">
+            <span class="brand-mark brand-mark-light" aria-hidden="true">
+                <svg viewBox="0 0 32 32"><path d="M9 7.5h9.2a7.5 7.5 0 0 1 0 15H9v-15Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M13 12.5h5.1a2.5 2.5 0 0 1 0 5H13v-5Z" fill="currentColor"/></svg>
+            </span>
+            <span class="brand-word">{{ app_name }}<span>.</span></span>
+        </a>
+        <div class="auth-aside-copy">
+            <p class="eyebrow eyebrow-light"><span class="eyebrow-line"></span>Builder’s entrance</p>
+            <h2>One key.<br><em>Three seats.</em></h2>
+            <p>This door lets the developer turn their own signed-in account into an administrator without creating a second login.</p>
+        </div>
+        <div class="developer-rules">
+            <div><span>01</span><p>You must already be signed in.</p></div>
+            <div><span>02</span><p>The developer key only upgrades your own account.</p></div>
+            <div><span>03</span><p>The three-admin limit still applies, exactly.</p></div>
+        </div>
+        <p class="auth-aside-foot">Keep the key out of source control and public messages.</p>
+    </section>
+
+    <section class="auth-main">
+        <div class="auth-card">
+            <span class="access-badge"><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg></span>
+            <div class="auth-card-heading">
+                <p class="eyebrow"><span class="eyebrow-line"></span>Developer access</p>
+                <h1>Unlock the console.</h1>
+                <p>You are signed in as <strong>@{{ user.username }}</strong>. Enter the developer key to claim an open admin seat.</p>
+            </div>
+
+            {% if error %}
+            <div class="flash flash-error" role="alert">
+                <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form action="/admin/access" method="post" class="auth-form">
+                <div class="form-field">
+                    <label for="access_key">Developer key</label>
+                    <input id="access_key" name="access_key" type="password" required autofocus autocomplete="off" spellcheck="false" placeholder="Paste your developer key">
+                </div>
+                <button class="button button-primary button-block button-lg" type="submit">Claim an admin seat <svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></button>
+            </form>
+
+            <div class="access-hint">
+                <strong>Where is the key?</strong>
+                <p>It is stored server-side in <code>.admin_access_key</code>, or supplied with the <code>ADMIN_ACCESS_KEY</code> environment variable. Never share it publicly.</p>
+            </div>
+
+            {% if developer_email %}
+            <p class="access-note"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-lock"></use></svg> This door is restricted to {{ developer_email }}.</p>
+            {% endif %}
+
+            <div class="auth-meta">
+                <a href="/todos"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-arrow-left"></use></svg> Back to workspace</a>
+                <form action="/auth/logout" method="post" class="inline-form">
+                    <button class="link-button" type="submit">Use another account</button>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

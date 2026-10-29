@@ -1,0 +1,48 @@
+<article class="task-card{% if todo.complete %} is-complete{% endif %}"
+         data-todo-id="{{ todo.id }}"
+         data-title="{{ todo.title }}"
+         data-description="{{ todo.description }}"
+         data-priority="{{ todo.priority }}"
+         data-complete="{{ 'true' if todo.complete else 'false' }}"
+         data-created-at="{{ todo.created_at | utc_iso }}"
+         data-deadline="{{ todo.deadline | utc_iso }}"
+         data-completed-at="{{ todo.completed_at | utc_iso }}"
+         data-search="{{ (todo.title ~ ' ' ~ todo.description) | lower }}">
+    <button class="task-toggle" type="button" data-action="toggle"
+            aria-pressed="{{ 'true' if todo.complete else 'false' }}"
+            aria-label="{{ 'Mark as not done' if todo.complete else 'Mark as done' }}: {{ todo.title }}">
+        <svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+    </button>
+
+    <div class="task-body">
+        <div class="task-heading">
+            <h3 class="task-title">{{ todo.title }}</h3>
+            <span class="priority-pill priority-{{ todo.priority | priority_key }}">
+                {{ todo.priority | priority_label }}
+            </span>
+        </div>
+        {% if todo.description %}
+        <p class="task-description">{{ todo.description }}</p>
+        {% endif %}
+        <div class="task-meta">
+            <span class="meta-item js-deadline-item">
+                <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                <span class="js-deadline-label{% if not todo.deadline %} meta-muted{% endif %}">{% if todo.deadline %}{{ todo.deadline | utc_label("%b %d · %H:%M UTC") }}{% else %}No deadline{% endif %}</span>
+            </span>
+            <span class="deadline-state" data-deadline-state></span>
+            <span class="meta-item meta-created">
+                <svg class="icon icon-xs" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                <span class="js-created-label">Added {{ todo.created_at | utc_label("%b %d") }}</span>
+            </span>
+        </div>
+    </div>
+
+    <div class="task-actions">
+        <button class="icon-button" type="button" data-action="edit" aria-label="Edit task: {{ todo.title }}" title="Edit task">
+            <svg class="icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+        </button>
+        <button class="icon-button icon-button-danger" type="button" data-action="delete" aria-label="Delete task: {{ todo.title }}" title="Delete task">
+            <svg class="icon" aria-hidden="true"><use href="#icon-trash"></use></svg>
+        </button>
+    </div>
+</article>

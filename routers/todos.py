@@ -1,120 +1,183 @@
-﻿from typing import Annotated
-from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
-from fastapi import Depends, APIRouter, HTTPException, Path, Request
-from fastapi.templating import Jinja2Templates
-from models import Todos
-from database import SessionLocal
-from starlette import status
-from routers.auth import get_current_user
-from datetime import datetime
+"""The signed-in workspace page plus the owner-scoped todo JSON API."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
 from typing import Optional
-from pathlib import Path as FilePath
-from fastapi import APIRouter, Depends, HTTPException, Path, Request
 
-router = APIRouter(
-     prefix='/todos',
-     tags=['todos']
-)
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
+from starlette import status
+
+from database import get_db
+from dependencies import CurrentUser
+from models import Todo, utcnow
+from schemas import TodoCompletePayload, TodoPayload, TodoRead
+from templating import templates
 
 
-BASE_DIR = FilePath(__file__).resolve().parent.parent
-templates = Jinja2Templates(directory=BASE_DIR / "templates")
+page_router = APIRouter(tags=["pages"])
+api_router = APIRouter(prefix="/api/todos", tags=["todos"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
-db_dependency = Annotated[Session, Depends(get_db)]
-user_dependency = Annotated[dict, Depends(get_current_user)]
-"""
-class todo_request(BaseModel):
-    priority: int = Field(gt=0, lt=6)
-    # Change this line to allow empty descriptions:
-    description: str = Field(default="", max_length=100) 
-    title: str = Field(min_length=3, max_length=30)
-    complete: bool
+def _normalize_deadline(value: Optional[datetime]) -> Optional[datetime]:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc).replace(tzinfo=None)
 
-"""
-class todo_request(BaseModel):
-    priority: int = Field(gt=0, lt=6)
-    description: str = Field(default="", max_length=100)
-    title: str = Field(min_length=3, max_length=30)
-    complete: bool
-    deadline: Optional[datetime] = None # NEW
 
-# --- UPDATED: Now returns the HTML page ---
-@router.get("/", status_code=status.HTTP_200_OK)
-async def read_all(request: Request, user: user_dependency, db: db_dependency):
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
-    
-    todos = db.query(Todos).filter(Todos.owner_id == user.get('id')).all()
-    
-    # Return the HTML template instead of JSON
+def _owned_todo(db: Session, todo_id: int, owner_id: int) -> Todo:
+    todo = (
+        db.query(Todo)
+        .filter(Todo.id == todo_id, Todo.owner_id == owner_id)
+        .first()
+    )
+    if todo is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found.",
+        )
+    return todo
+
+
+@page_router.get("/todos")
+def todos_page(
+    request: Request,
+    user: CurrentUser,
+    db: Session = Depends(get_db),
+):
+    todos = (
+        db.query(Todo)
+        .filter(Todo.owner_id == user.id)
+        .order_by(
+            Todo.complete.asc(),
+            Todo.deadline.is_(None).asc(),
+            Todo.deadline.asc(),
+            Todo.created_at.desc(),
+        )
+        .all()
+    )
+    total = len(todos)
+    completed = sum(1 for todo in todos if todo.complete)
     return templates.TemplateResponse(
-        request, 
-        "home.html", 
-        {"request": request, "todos": todos}
+        request,
+        "dashboard.html",
+        {
+            "request": request,
+            "user": user,
+            "todos": todos,
+            "total": total,
+            "completed": completed,
+            "open_count": total - completed,
+            "message": request.query_params.get("message"),
+            "message_kind": request.query_params.get("kind", "success"),
+        },
     )
 
-@router.get("/todo/{todo_id}", status_code=status.HTTP_200_OK)
-async def read_query(user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)):
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
-  
-    todo_model = db.query(Todos).filter(Todos.id == todo_id).filter(Todos.owner_id == user.get('id')).first()
-    if todo_model is not None:
-        return todo_model
-    
-    raise HTTPException(status_code=404, detail="todo is not found ")
 
-# --- UPDATED: Returns the newly created todo so JS can render it ---
-@router.post("/todo", status_code=status.HTTP_201_CREATED)
-async def create_todo(user: user_dependency, db: db_dependency, new_todo: todo_request):
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
-        
-    # Ensure created_at is set to now, and pass the deadline
-    todo_model = Todos(
-        **new_todo.model_dump(exclude={"deadline"}), 
-        deadline=new_todo.deadline,
-        owner_id=user.get('id'),
-        created_at=datetime.utcnow()
+@page_router.get("/todos/")
+def todos_page_slash():
+    return RedirectResponse(url="/todos", status_code=status.HTTP_308_PERMANENT_REDIRECT)
+
+
+@api_router.get("", response_model=list[TodoRead])
+def list_todos(
+    user: CurrentUser,
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(Todo)
+        .filter(Todo.owner_id == user.id)
+        .order_by(
+            Todo.complete.asc(),
+            Todo.deadline.is_(None).asc(),
+            Todo.deadline.asc(),
+            Todo.created_at.desc(),
+        )
+        .all()
     )
-    db.add(todo_model)
-    db.commit()
-    db.refresh(todo_model) 
-    return todo_model 
 
 
-@router.put("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_todo(user: user_dependency, db: db_dependency, todo_request: todo_request, todo_id: int = Path(gt=0)):
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
- 
-    todo_model = db.query(Todos).filter(Todos.id == todo_id).filter(Todos.owner_id == user.get('id')).first()
-    if todo_model is None:
-         raise HTTPException(status_code=404, detail="not found")
-         
-    todo_model.title = todo_request.title
-    todo_model.description = todo_request.description
-    todo_model.priority = todo_request.priority
-    todo_model.complete = todo_request.complete
-    db.add(todo_model)
+@api_router.post("", response_model=TodoRead, status_code=status.HTTP_201_CREATED)
+def create_todo(
+    payload: TodoPayload,
+    user: CurrentUser,
+    db: Session = Depends(get_db),
+):
+    now = utcnow()
+    todo = Todo(
+        title=payload.title,
+        description=payload.description,
+        priority=payload.priority,
+        complete=payload.complete,
+        owner_id=user.id,
+        created_at=now,
+        updated_at=now,
+        deadline=_normalize_deadline(payload.deadline),
+        completed_at=now if payload.complete else None,
+    )
+    db.add(todo)
     db.commit()
+    db.refresh(todo)
+    return todo
 
-@router.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_todo(user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)):
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
- 
-    todo_model = db.query(Todos).filter(Todos.id == todo_id).filter(Todos.owner_id == user.get('id')).first()
-    if todo_model is None:
-        raise HTTPException(status_code=404, detail="todo not found")
-        
-    db.query(Todos).filter(Todos.id == todo_id).filter(Todos.owner_id == user.get('id')).delete()
+
+@api_router.put("/{todo_id}", response_model=TodoRead)
+def update_todo(
+    todo_id: int,
+    payload: TodoPayload,
+    user: CurrentUser,
+    db: Session = Depends(get_db),
+):
+    todo = _owned_todo(db, todo_id, user.id)
+    was_complete = todo.complete
+
+    todo.title = payload.title
+    todo.description = payload.description
+    todo.priority = payload.priority
+    todo.complete = payload.complete
+    todo.deadline = _normalize_deadline(payload.deadline)
+    todo.updated_at = utcnow()
+
+    if payload.complete and not was_complete:
+        todo.completed_at = utcnow()
+    elif not payload.complete:
+        todo.completed_at = None
+    elif todo.completed_at is None:
+        todo.completed_at = utcnow()
+
     db.commit()
+    db.refresh(todo)
+    return todo
+
+
+@api_router.patch("/{todo_id}/complete", response_model=TodoRead)
+def set_todo_complete(
+    todo_id: int,
+    payload: TodoCompletePayload,
+    user: CurrentUser,
+    db: Session = Depends(get_db),
+):
+    todo = _owned_todo(db, todo_id, user.id)
+    if todo.complete != payload.complete:
+        todo.complete = payload.complete
+        todo.completed_at = utcnow() if payload.complete else None
+        todo.updated_at = utcnow()
+        db.commit()
+        db.refresh(todo)
+    return todo
+
+
+@api_router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_todo(
+    todo_id: int,
+    user: CurrentUser,
+    db: Session = Depends(get_db),
+):
+    todo = _owned_todo(db, todo_id, user.id)
+    db.delete(todo)
+    db.commit()
+    return None

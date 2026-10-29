@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} — a calmer way to finish what matters{% endblock %}
+{% block body_class %}marketing-page{% endblock %}
+
+{% block body %}
+<header class="site-header">
+    <div class="site-header-inner">
+        <a class="brand" href="/" aria-label="{{ app_name }} home">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32"><path d="M9 7.5h9.2a7.5 7.5 0 0 1 0 15H9v-15Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M13 12.5h5.1a2.5 2.5 0 0 1 0 5H13v-5Z" fill="currentColor"/></svg>
+            </span>
+            <span class="brand-word">{{ app_name }}<span>.</span></span>
+        </a>
+
+        <nav class="site-nav" aria-label="Primary navigation">
+            {% if user %}
+                <a href="/todos">Workspace</a>
+                {% if user.role == 'admin' %}<a href="/admin">Admin</a>{% endif %}
+                <form action="/auth/logout" method="post" class="inline-form">
+                    <button class="nav-text-button" type="submit">Log out</button>
+                </form>
+                <a class="button button-primary button-sm" href="/todos">Open workspace</a>
+            {% else %}
+                <a href="#how-it-works">How it works</a>
+                <a href="/auth/login-page">Log in</a>
+                <a class="button button-primary button-sm" href="/auth/register-page">Start for free</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+<main id="main">
+    <section class="hero">
+        <div class="hero-copy">
+            <p class="eyebrow"><span class="eyebrow-line"></span>A quieter productivity system</p>
+            <h1>Make room for<br><em>what matters.</em></h1>
+            <p class="hero-lede">A focused todo list, a deadline calendar and a live clock in one calm workspace. Add a deadline when it helps. Leave it out when it doesn’t.</p>
+            <div class="hero-actions">
+                {% if user %}
+                <a class="button button-primary button-lg" href="/todos">Go to my workspace <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a>
+                {% else %}
+                <a class="button button-primary button-lg" href="/auth/register-page">Create my workspace <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a>
+                <a class="text-link" href="/auth/login-page">I already have an account</a>
+                {% endif %}
+            </div>
+            <p class="hero-note"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-shield"></use></svg> Optional deadlines. Owner-scoped tasks. A hard three-admin limit.</p>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+            <div class="preview-glow"></div>
+            <div class="preview-window">
+                <div class="preview-bar">
+                    <div class="preview-dots"><span></span><span></span><span></span></div>
+                    <span class="preview-title">Thursday, 29 October</span>
+                    <span class="preview-avatar">HS</span>
+                </div>
+                <div class="preview-content">
+                    <div class="preview-topline">
+                        <div>
+                            <p class="preview-kicker">Good evening</p>
+                            <p class="preview-heading">Today’s focus</p>
+                        </div>
+                        <span class="preview-clock">
+                            <span class="preview-clock-time">7:24</span>
+                            <span class="preview-clock-zone">PM</span>
+                        </span>
+                    </div>
+                    <div class="preview-calendar">
+                        <div class="preview-calendar-head">
+                            <span>October</span>
+                            <span class="preview-calendar-nav">‹ &nbsp; ›</span>
+                        </div>
+                        <div class="preview-week">
+                            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                        </div>
+                        <div class="preview-days">
+                            <span class="muted">27</span><span class="muted">28</span><span class="today">29</span><span>30</span><span>31</span><span class="muted">1</span><span class="muted">2</span>
+                            <span>3</span><span class="dot">4</span><span>5</span><span>6</span><span class="dot">7</span><span>8</span><span>9</span>
+                        </div>
+                    </div>
+                    <div class="preview-tasks">
+                        <div class="preview-task">
+                            <span class="preview-check done">✓</span>
+                            <span class="preview-task-text done">Send the project brief</span>
+                            <span class="preview-tag tag-green">Done</span>
+                        </div>
+                        <div class="preview-task">
+                            <span class="preview-check"></span>
+                            <span class="preview-task-text">Review the new dashboard</span>
+                            <span class="preview-tag tag-amber">Today</span>
+                        </div>
+                        <div class="preview-task">
+                            <span class="preview-check"></span>
+                            <span class="preview-task-text">Book the design critique</span>
+                            <span class="preview-tag tag-grey">No deadline</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="floating-note">
+                <span class="floating-note-icon"><svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg></span>
+                <span><strong>Deadline optional</strong><small>Only add a date when it matters.</small></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="feature-strip" id="how-it-works">
+        <article class="feature-card">
+            <span class="feature-index">01</span>
+            <span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg></span>
+            <h2>Time, in your own time.</h2>
+            <p>A live analog and digital clock keeps the present moment visible without turning your day into a countdown.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-index">02</span>
+            <span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg></span>
+            <h2>A calendar with a point of view.</h2>
+            <p>Deadlines appear as quiet dots on the month grid. Choose a day to see exactly what lives there.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-index">03</span>
+            <span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
+            <h2>Three seats. No surprises.</h2>
+            <p>Administrator access is capped at three people, enforced by the database and visible in the admin console.</p>
+        </article>
+    </section>
+
+    <section class="split-feature">
+        <div class="split-copy">
+            <p class="eyebrow"><span class="eyebrow-line"></span>Deadlines that stay optional</p>
+            <h2>Some tasks need a date.<br><em>Most just need a start.</em></h2>
+            <p>Leave the deadline switch off and a task stays open-ended. Turn it on and it appears on the calendar with a gentle due-state: upcoming, due today, or overdue. No pressure by default.</p>
+            <ul class="check-list">
+                <li><span class="check-bullet"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>Optional for every task, editable at any time</li>
+                <li><span class="check-bullet"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>Calendar dots update the moment you save</li>
+                <li><span class="check-bullet"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>Due states calculated in your local time</li>
+            </ul>
+        </div>
+        <div class="deadline-demo" aria-hidden="true">
+            <div class="deadline-demo-card">
+                <div class="deadline-demo-row">
+                    <span class="demo-check"></span>
+                    <div><strong>Write the launch note</strong><small>High priority</small></div>
+                </div>
+                <div class="demo-deadline-control">
+                    <span class="demo-switch"></span>
+                    <span><strong>Set a deadline</strong><small>Thursday, 5:00 PM</small></span>
+                </div>
+            </div>
+            <div class="deadline-demo-caption"><span class="signal"></span>On the calendar, not in the way.</div>
+        </div>
+    </section>
+
+    <section class="cta-band">
+        <div>
+            <p class="eyebrow eyebrow-light"><span class="eyebrow-line"></span>Your day, with a little more room</p>
+            <h2>Start with one task.<br><em>See how it feels.</em></h2>
+        </div>
+        <div class="cta-actions">
+            {% if user %}
+            <a class="button button-light button-lg" href="/todos">Open my workspace <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a>
+            {% else %}
+            <a class="button button-light button-lg" href="/auth/register-page">Create an account <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a>
+            <a class="cta-text-link" href="/auth/login-page">Log in instead</a>
+            {% endif %}
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <a class="brand brand-footer" href="/">
+            <span class="brand-mark brand-mark-small" aria-hidden="true">
+                <svg viewBox="0 0 32 32"><path d="M9 7.5h9.2a7.5 7.5 0 0 1 0 15H9v-15Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M13 12.5h5.1a2.5 2.5 0 0 1 0 5H13v-5Z" fill="currentColor"/></svg>
+            </span>
+            <span class="brand-word">{{ app_name }}<span>.</span></span>
+        </a>
+        <p>A small, deliberate todo workspace.</p>
+        <div class="footer-links">
+            <a href="/auth/login-page">Log in</a>
+            <a href="/auth/register-page">Register</a>
+            <a href="/admin/access">Developer access</a>
+        </div>
+    </div>
+</footer>
+{% endblock %}

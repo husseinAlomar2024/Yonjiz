@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ status_code }} · {{ title }} · {{ app_name }}{% endblock %}
+{% block body_class %}error-page{% endblock %}
+
+{% block body %}
+<main class="error-shell" id="main">
+    <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M9 7.5h9.2a7.5 7.5 0 0 1 0 15H9v-15Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M13 12.5h5.1a2.5 2.5 0 0 1 0 5H13v-5Z" fill="currentColor"/></svg>
+        </span>
+        <span class="brand-word">{{ app_name }}<span>.</span></span>
+    </a>
+
+    <div class="error-body">
+        <span class="error-code">{{ status_code }}</span>
+        <div class="error-copy">
+            <p class="eyebrow"><span class="eyebrow-line"></span>{{ 'A locked door' if status_code == 403 else 'A missing page' }}</p>
+            <h1>{{ title }}</h1>
+            <p>{{ message }}</p>
+            <div class="error-actions">
+                {% if user %}
+                <a class="button button-primary" href="/todos">Back to workspace <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a>
+                {% else %}
+                <a class="button button-primary" href="/auth/login-page">Sign in <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></a>
+                {% endif %}
+                {% if show_admin_access %}
+                <a class="button button-secondary" href="/admin/access">Developer access</a>
+                {% else %}
+                <a class="button button-secondary" href="/">Back home</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <p class="error-foot">If you believe this is a mistake, contact the workspace administrator.</p>
+</main>
+{% endblock %}

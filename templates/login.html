@@ -1,83 +1,91 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" type="text/css" href="{{url_for('static',path='/css/base.css')}}">
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Log in</title>
-	<style>
-		* { box-sizing: border-box; }
-		body {
-			min-height: 100vh;
-			margin: 0;
-			display: grid;
-			place-items: center;
-			padding: 24px;
-			background: #f3f5f9;
-			color: #172033;
-			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-		}
-		main {
-			width: min(100%, 420px);
-			padding: 40px;
-			background: #fff;
-			border: 1px solid #e5e9f0;
-			border-radius: 16px;
-			box-shadow: 0 16px 40px rgba(23, 32, 51, .08);
-		}
-		h1 { margin: 0 0 8px; font-size: 1.8rem; }
-		.subtitle { margin: 0 0 28px; color: #667085; }
-		.field { margin-bottom: 18px; }
-		label { display: block; margin-bottom: 7px; font-weight: 600; font-size: .92rem; }
-		input {
-			width: 100%;
-			padding: 12px 14px;
-			border: 1px solid #cfd6e2;
-			border-radius: 8px;
-			font: inherit;
-		}
-		input:focus { outline: 3px solid rgba(62, 99, 221, .18); border-color: #3e63dd; }
-		button {
-			width: 100%;
-			margin-top: 6px;
-			padding: 13px;
-			border: 0;
-			border-radius: 8px;
-			background: #3e63dd;
-			color: #fff;
-			font: inherit;
-			font-weight: 650;
-			cursor: pointer;
-		}
-		button:hover { background: #3152c4; }
-		.error { margin: 0 0 18px; padding: 11px 13px; border-radius: 8px; background: #fff0f0; color: #a11b1b; }
-		@media (max-width: 480px) { main { padding: 28px 22px; } }
-	</style>
-</head>
-<body>
-	<main>
-		<h1>Welcome back</h1>
-		<p class="subtitle">Log in to your account to continue.</p>
+{% extends "base.html" %}
+{% block title %}Log in · {{ app_name }}{% endblock %}
+{% block body_class %}auth-page{% endblock %}
 
-		{% if error %}
-		<p class="error" role="alert">{{ error }}</p>
-		{% endif %}
+{% block body %}
+<main class="auth-shell" id="main">
+    <section class="auth-aside">
+        <a class="brand brand-on-dark" href="/">
+            <span class="brand-mark brand-mark-light" aria-hidden="true">
+                <svg viewBox="0 0 32 32"><path d="M9 7.5h9.2a7.5 7.5 0 0 1 0 15H9v-15Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M13 12.5h5.1a2.5 2.5 0 0 1 0 5H13v-5Z" fill="currentColor"/></svg>
+            </span>
+            <span class="brand-word">{{ app_name }}<span>.</span></span>
+        </a>
+        <div class="auth-aside-copy">
+            <p class="eyebrow eyebrow-light"><span class="eyebrow-line"></span>Welcome back</p>
+            <h2>The day is yours.<br><em>Pick up a thread.</em></h2>
+            <p>Your tasks, deadlines and calendar are exactly where you left them.</p>
+        </div>
+        <div class="auth-aside-card" aria-hidden="true">
+            <div class="aside-task">
+                <span class="aside-check done"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+                <span class="aside-task-text done">Morning pages</span>
+                <span class="aside-tag">Done</span>
+            </div>
+            <div class="aside-task">
+                <span class="aside-check"></span>
+                <span class="aside-task-text">Finish the quarterly plan</span>
+                <span class="aside-tag tag-amber">5:00 PM</span>
+            </div>
+            <div class="aside-task">
+                <span class="aside-check"></span>
+                <span class="aside-task-text">Call the studio</span>
+                <span class="aside-tag tag-grey">No date</span>
+            </div>
+        </div>
+        <p class="auth-aside-foot">Quiet by design. Built for the work that matters.</p>
+    </section>
 
-		<form method="post">
-			<div class="field">
-				<label for="username">Username</label>
-				<input id="username" name="username" type="text" autocomplete="username" required autofocus>
-			</div>
-			<div class="field">
-				<label for="password">Password</label>
-				<input id="password" name="password" type="password" autocomplete="current-password" required>
-			</div>
-			<button type="submit">Log in</button>
-		</form>
-        <!-- Add this right below your </form> tag in login.html -->
-<p style="margin-top: 20px; text-align: center; font-size: .9rem;">
-    Don't have an account? <a href="/auth/register-page" style="color: #3e63dd; text-decoration: none; font-weight: 600;">Register here</a>
-</p>
-	</main>
-</body>
-</html>
+    <section class="auth-main">
+        <div class="auth-card">
+            <div class="auth-card-heading">
+                <p class="eyebrow"><span class="eyebrow-line"></span>Account access</p>
+                <h1>Log in.</h1>
+                <p>Good to see you again. Enter your details to open your workspace.</p>
+            </div>
+
+            {% if registered %}
+            <div class="flash flash-success" role="status">
+                <svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+                <span>Account created. Sign in to begin.</span>
+            </div>
+            {% endif %}
+            {% if logged_out %}
+            <div class="flash flash-success" role="status">
+                <svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+                <span>You have been logged out safely.</span>
+            </div>
+            {% endif %}
+            {% if error %}
+            <div class="flash flash-error" role="alert">
+                <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form action="/auth/login-page" method="post" class="auth-form">
+                <input type="hidden" name="next" value="{{ next_url }}">
+                <div class="form-field">
+                    <label for="username">Username</label>
+                    <div class="input-wrap">
+                        <input id="username" name="username" type="text" value="{{ username }}" autocomplete="username" required autofocus spellcheck="false" placeholder="your_username">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label for="password">Password</label>
+                    <div class="input-wrap">
+                        <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Your password">
+                    </div>
+                </div>
+                <button class="button button-primary button-block button-lg" type="submit">Open my workspace <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg></button>
+            </form>
+
+            <p class="auth-switch">New to {{ app_name }}? <a href="/auth/register-page">Create an account</a></p>
+            <div class="auth-meta">
+                <a href="/"><svg class="icon icon-xs" aria-hidden="true"><use href="#icon-arrow-left"></use></svg> Back home</a>
+                <a href="/admin/access">Developer access</a>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
