@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Todos</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/todo.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Tasks</h1>
+            <a href="/auth/logout" class="logout-btn">Logout</a>
+        </header>
+
+        <!-- Add Todo Form -->
+        <form id="add-todo-form" class="add-form">
+    <!-- Title input with minlength="3" -->
+    <input type="text" id="todo-title" placeholder="Task title..." required minlength="3" autocomplete="off">
+    
+    <!-- Description input (no longer required to be 3 chars, so we removed 'required') -->
+    <input type="text" id="todo-desc" placeholder="Short description..." autocomplete="off">
+    
+    <select id="todo-priority">
+        <option value="1">Very Low</option>
+        <option value="2">Low</option>
+        <option value="3">Medium</option>
+        <option value="4">High</option>
+        <option value="5">Critical</option>
+    </select>
+    
+    <button type="submit" class="add-btn">Add</button>
+</form>
+
+        <!-- Todo List -->
+        <ul id="todo-list" class="todo-list">
+  {% for todo in todos %}
+<li class="todo-item {% if todo.complete %}completed{% endif %}" 
+    data-id="{{ todo.id }}"
+    data-title="{{ todo.title }}"
+    data-description="{{ todo.description }}"
+    data-priority="{{ todo.priority }}"
+    data-complete="{{ todo.complete }}">
+    
+    <label class="checkbox-container">
+        <input type="checkbox" class="toggle-todo" {% if todo.complete %}checked{% endif %}>
+        <span class="checkmark"></span>
+    </label>
+    
+    <!-- Do not delete this part! -->
+    <div class="todo-content">
+        <span class="todo-title">{{ todo.title }}</span>
+        <span class="priority-tag priority-{{ todo.priority }}">
+            {% if todo.priority == 1 %}Very Low
+            {% elif todo.priority == 2 %}Low
+            {% elif todo.priority == 3 %}Medium
+            {% elif todo.priority == 4 %}High
+            {% elif todo.priority == 5 %}Critical
+            {% else %}Priority {{ todo.priority }}
+            {% endif %}
+        </span>
+    </div>
+
+    <button class="delete-btn" title="Delete task">&times;</button>
+</li>
+{% endfor %}
+        </ul>
+        
+        <p id="empty-state" class="empty-state {% if todos %}hidden{% endif %}">
+            No tasks yet. Enjoy your day!
+        </p>
+    </div>
+
+    <script src="{{ url_for('static', path='/js/todo.js') }}"></script>
+</body>
+</html>

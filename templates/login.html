@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',path='/css/base.css')}}">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Log in</title>
+	<style>
+		* { box-sizing: border-box; }
+		body {
+			min-height: 100vh;
+			margin: 0;
+			display: grid;
+			place-items: center;
+			padding: 24px;
+			background: #f3f5f9;
+			color: #172033;
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+		}
+		main {
+			width: min(100%, 420px);
+			padding: 40px;
+			background: #fff;
+			border: 1px solid #e5e9f0;
+			border-radius: 16px;
+			box-shadow: 0 16px 40px rgba(23, 32, 51, .08);
+		}
+		h1 { margin: 0 0 8px; font-size: 1.8rem; }
+		.subtitle { margin: 0 0 28px; color: #667085; }
+		.field { margin-bottom: 18px; }
+		label { display: block; margin-bottom: 7px; font-weight: 600; font-size: .92rem; }
+		input {
+			width: 100%;
+			padding: 12px 14px;
+			border: 1px solid #cfd6e2;
+			border-radius: 8px;
+			font: inherit;
+		}
+		input:focus { outline: 3px solid rgba(62, 99, 221, .18); border-color: #3e63dd; }
+		button {
+			width: 100%;
+			margin-top: 6px;
+			padding: 13px;
+			border: 0;
+			border-radius: 8px;
+			background: #3e63dd;
+			color: #fff;
+			font: inherit;
+			font-weight: 650;
+			cursor: pointer;
+		}
+		button:hover { background: #3152c4; }
+		.error { margin: 0 0 18px; padding: 11px 13px; border-radius: 8px; background: #fff0f0; color: #a11b1b; }
+		@media (max-width: 480px) { main { padding: 28px 22px; } }
+	</style>
+</head>
+<body>
+	<main>
+		<h1>Welcome back</h1>
+		<p class="subtitle">Log in to your account to continue.</p>
+
+		{% if error %}
+		<p class="error" role="alert">{{ error }}</p>
+		{% endif %}
+
+		<form method="post">
+			<div class="field">
+				<label for="username">Username</label>
+				<input id="username" name="username" type="text" autocomplete="username" required autofocus>
+			</div>
+			<div class="field">
+				<label for="password">Password</label>
+				<input id="password" name="password" type="password" autocomplete="current-password" required>
+			</div>
+			<button type="submit">Log in</button>
+		</form>
+        <!-- Add this right below your </form> tag in login.html -->
+<p style="margin-top: 20px; text-align: center; font-size: .9rem;">
+    Don't have an account? <a href="/auth/register-page" style="color: #3e63dd; text-decoration: none; font-weight: 600;">Register here</a>
+</p>
+	</main>
+</body>
+</html>
