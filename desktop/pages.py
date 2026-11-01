@@ -6,14 +6,13 @@ import calendar as pycalendar
 from datetime import datetime, timedelta
 from typing import Callable, Optional
 
-from PySide6.QtCore import QDate, Qt, QTime, Signal
+from PySide6.QtCore import QDate, Qt, QTime, QTimer, Signal
 from PySide6.QtGui import QColor, QTextCharFormat
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QButtonGroup,
     QCalendarWidget,
     QComboBox,
-    QDialog,
     QFrame,
     QGridLayout,
     QHBoxLayout,
@@ -40,7 +39,7 @@ from desktop.widgets import (
     SeatCard,
     StatCard,
     TaskCard,
-    TaskDialog,
+    TaskComposer,
     button,
     label,
     priority_name,
@@ -317,6 +316,7 @@ class WorkspacePage(QWidget):
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
         scroll = QScrollArea()
+        self.scroll = scroll
         scroll.setWidgetResizable(True)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         content = QWidget()
@@ -484,6 +484,12 @@ class WorkspacePage(QWidget):
         )
         self.active_date.hide()
         panel_layout.addWidget(self.active_date)
+
+        self.composer = TaskComposer()
+        self.composer.saved.connect(self._save_task)
+        self.composer.cancelled.connect(self._hide_composer)
+        self.composer.hide()
+        panel_layout.addWidget(self.composer)
 
         self.task_container = QWidget()
         self.task_layout = QVBoxLayout(self.task_container)
@@ -706,25 +712,35 @@ class WorkspacePage(QWidget):
             else f"{len(all_tasks)} tasks"
         )
 
+    def _show_composer(self) -> None:
+        self.composer.show()
+        QTimer.singleShot(0, lambda: self.scroll.ensureWidgetVisible(self.composer))
+
+    def _hide_composer(self) -> None:
+        self.composer.hide()
+
     def new_task(self) -> None:
-        dialog = TaskDialog(parent=self)
-        if dialog.exec() == QDialog.Accepted:
-            try:
-                self.snapshot = self.service.create_task(dialog.payload())
-                self._render_all()
-                self.notify("Task added.")
-            except Exception as exc:
-                QMessageBox.warning(self, "YONJIZ", str(exc))
+        self.composer.begin_add()
+        self._show_composer()
 
     def _edit_task(self, task: dict) -> None:
-        dialog = TaskDialog(task, self)
-        if dialog.exec() == QDialog.Accepted:
-            try:
-                self.snapshot = self.service.update_task(task["id"], dialog.payload())
-                self._render_all()
-                self.notify("Task updated.")
-            except Exception as exc:
-                QMessageBox.warning(self, "YONJIZ", str(exc))
+        self.composer.begin_edit(task)
+        self._show_composer()
+
+    def _save_task(self, payload: dict) -> None:
+        try:
+            if self.composer.task:
+                self.snapshot = self.service.update_task(self.composer.task["id"], payload)
+                message = "Task updated."
+            else:
+                self.snapshot = self.service.create_task(payload)
+                message = "Task added."
+        except Exception as exc:
+            self.composer.show_error(str(exc))
+            return
+        self.composer.hide()
+        self._render_all()
+        self.notify(message)
 
     def _toggle_task(self, task_id: int) -> None:
         try:

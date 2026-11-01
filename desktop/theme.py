@@ -47,6 +47,14 @@ QFrame#Panel, QFrame#ProgressCard {{
     border: 1px solid {LINE};
     border-radius: 18px;
 }}
+QFrame#InlineComposer {{
+    background: {PAPER_SOFT};
+    border: 1px solid {LINE_STRONG};
+    border-radius: 14px;
+}}
+QFrame#InlineComposer QTextEdit {{
+    background: {PAPER};
+}}
 QFrame#TaskCard {{
     background: {PAPER_SOFT};
     border-radius: 12px;

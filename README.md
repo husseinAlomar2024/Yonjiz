@@ -40,11 +40,18 @@ The desktop edition is a **native Qt application**, not a browser wrapper:
 - The app includes the login screen, live analog clock, deadline calendar, task
   CRUD, filters, local account creation, the three-seat admin console and the
   protected main admin.
+- Login is the first page of the same main window. It never opens a second
+  window or a browser.
+- Task creation and editing happen in an **inline composer inside the task
+  panel** — no task dialog window.
+- A completely local English **spelling correction** button checks the task
+  title and notes, with an Undo action. It uses a bundled dictionary and never
+  calls the internet.
 - Larger, high-DPI-friendly typography and a **Show / Hide password** control on
   both login and local account creation.
 - Keyboard shortcuts: `Ctrl+N` new task, `Ctrl+K` search, `Ctrl+1` workspace,
   `Ctrl+2` admin console, `Ctrl+L` log out.
-- Minimum window size is 1080×720; it opens at 1380×900.
+- Minimum window size is 1160×780; it opens at 1440×940.
 
 The current local install was built from this checkout and the seed kept your
 existing `hussein_alomar` main admin plus `hussein_1`.
@@ -52,6 +59,8 @@ existing `hussein_alomar` main admin plus `hussein_1`.
 | Sign in | Password visible |
 | --- | --- |
 | ![Desktop login](docs/screenshots/desktop-login.png) | ![Password shown](docs/screenshots/desktop-login-password.png) |
+
+![Inline task composer with spelling correction](docs/screenshots/desktop-inline-composer.png)
 
 ### Rebuild the desktop app
 
@@ -216,7 +225,8 @@ The suite covers registration/login, password hashing, inactive accounts, owner-
 desktop_app.py           native Qt entry point; no server, no network
 desktop/service.py       direct SQLite task/admin service
 desktop/pages.py         login, workspace and admin pages
-desktop/widgets.py       clock, calendar cards, task cards, dialogs
+desktop/widgets.py       clock, task cards, inline composer, dialogs
+desktop/spellcheck.py    offline bundled English spelling corrector
 desktop/assets/          app icon and brand mark
 build_desktop.ps1        package/install/create Desktop shortcut
 YONJIZ.spec              PyInstaller build definition

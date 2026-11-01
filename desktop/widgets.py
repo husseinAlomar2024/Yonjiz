@@ -12,10 +12,12 @@ from PySide6.QtGui import (
     QFont,
     QFontMetrics,
     QIcon,
+    QKeySequence,
     QPainter,
     QPainterPath,
     QPen,
     QPixmap,
+    QShortcut,
 )
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -35,6 +37,7 @@ from PySide6.QtWidgets import (
 
 from desktop import theme
 from desktop.paths import brand_mark_path, icon_path
+from desktop.spellcheck import correct_text
 
 
 def repolish(widget: QWidget) -> None:
@@ -501,6 +504,228 @@ class SeatCard(QFrame):
             slot = label(f"SLOT {seat['slot']}")
             slot.setStyleSheet(f"color: {theme.MUTED_LIGHT}; font-size: 10px;")
             layout.addWidget(slot, 0, Qt.AlignRight)
+
+
+class TaskComposer(QFrame):
+    """Inline task editor used in the workspace instead of a modal window."""
+
+    saved = Signal(dict)
+    cancelled = Signal()
+
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.task: Optional[dict] = None
+        self._undo_spell: Optional[tuple[str, str]] = None
+        self.setObjectName("InlineComposer")
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(15, 13, 15, 13)
+        layout.setSpacing(7)
+
+        head = QHBoxLayout()
+        self.heading = label("NEW TASK", "Eyebrow")
+        head.addWidget(self.heading)
+        head.addStretch(1)
+        close = button("×", "CircleButton")
+        close.setFixedSize(28, 28)
+        close.setToolTip("Close without saving")
+        close.clicked.connect(self.cancelled.emit)
+        head.addWidget(close)
+        layout.addLayout(head)
+
+        layout.addWidget(self._field_label("Task title"))
+        self.title_edit = QLineEdit()
+        self.title_edit.setPlaceholderText("What needs doing?")
+        self.title_edit.setMaxLength(120)
+        self.title_edit.returnPressed.connect(self._submit)
+        layout.addWidget(self.title_edit)
+
+        details = QHBoxLayout()
+        details.setSpacing(12)
+        priority_col = QVBoxLayout()
+        priority_col.setSpacing(4)
+        priority_col.addWidget(self._field_label("Priority"))
+        self.priority = QComboBox()
+        for value, name in [
+            (1, "Very low"), (2, "Low"), (3, "Medium"), (4, "High"), (5, "Critical")
+        ]:
+            self.priority.addItem(name, value)
+        self.priority.setCurrentIndex(2)
+        priority_col.addWidget(self.priority)
+        details.addLayout(priority_col, 1)
+
+        deadline_col = QVBoxLayout()
+        deadline_col.setSpacing(4)
+        deadline_head = QHBoxLayout()
+        deadline_head.addWidget(self._field_label("Deadline"))
+        deadline_head.addStretch(1)
+        self.deadline_toggle = QCheckBox("Set a deadline")
+        deadline_head.addWidget(self.deadline_toggle)
+        deadline_col.addLayout(deadline_head)
+        self.deadline = QDateTimeEdit()
+        self.deadline.setCalendarPopup(True)
+        self.deadline.setDisplayFormat("MMM d, yyyy  h:mm AP")
+        self.deadline.setMinimumDateTime(QDateTime.currentDateTime().addYears(-2))
+        initial = QDateTime.currentDateTime().addDays(1)
+        initial.setTime(QTime(17, 0))
+        self.deadline.setDateTime(initial)
+        self.deadline.setEnabled(False)
+        self.deadline_toggle.toggled.connect(self._toggle_deadline)
+        deadline_col.addWidget(self.deadline)
+        details.addLayout(deadline_col, 2)
+        layout.addLayout(details)
+
+        layout.addWidget(self._field_label("Notes  ·  optional"))
+        self.notes = QTextEdit()
+        self.notes.setPlaceholderText("A little context, if it helps.")
+        self.notes.setFixedHeight(64)
+        layout.addWidget(self.notes)
+
+        spell_row = QHBoxLayout()
+        spell_row.setSpacing(8)
+        self.spell_button = button("Correct spelling", "SecondaryButton")
+        self.spell_button.setMinimumHeight(30)
+        self.spell_button.clicked.connect(self._check_spelling)
+        spell_row.addWidget(self.spell_button)
+        self.spell_status = label("", "Tiny")
+        self.spell_status.setWordWrap(True)
+        spell_row.addWidget(self.spell_status, 1)
+        self.undo_spell = button("Undo", "TextButton")
+        self.undo_spell.clicked.connect(self._undo_spelling)
+        self.undo_spell.hide()
+        spell_row.addWidget(self.undo_spell)
+        layout.addLayout(spell_row)
+
+        self.error = label("")
+        self.error.setStyleSheet(
+            f"color: {theme.DANGER}; background: {theme.DANGER_SOFT};"
+            " border-radius: 6px; padding: 5px 8px; font-size: 12px;"
+        )
+        self.error.setWordWrap(True)
+        self.error.hide()
+        layout.addWidget(self.error)
+
+        actions = QHBoxLayout()
+        actions.addStretch(1)
+        cancel = button("Cancel", "GhostButton")
+        cancel.clicked.connect(self.cancelled.emit)
+        actions.addWidget(cancel)
+        self.save_button = button("Add task", "PrimaryButton")
+        self.save_button.clicked.connect(self._submit)
+        actions.addWidget(self.save_button)
+        layout.addLayout(actions)
+
+        QShortcut(QKeySequence("Esc"), self, activated=self.cancelled.emit)
+        QShortcut(QKeySequence("Ctrl+Return"), self, activated=self._submit)
+
+    @staticmethod
+    def _field_label(text: str) -> QLabel:
+        item = QLabel(text)
+        item.setStyleSheet(
+            f"color: {theme.INK_SOFT}; font-size: 11px; font-weight: 700;"
+        )
+        return item
+
+    def begin_add(self) -> None:
+        self.task = None
+        self._undo_spell = None
+        self.heading.setText("NEW TASK")
+        self.save_button.setText("Add task")
+        self.title_edit.clear()
+        self.notes.clear()
+        self.priority.setCurrentIndex(2)
+        self.deadline_toggle.setChecked(False)
+        self.deadline.setEnabled(False)
+        self.error.hide()
+        self.spell_status.clear()
+        self.undo_spell.hide()
+        self.show()
+        self.title_edit.setFocus()
+
+    def begin_edit(self, task: dict) -> None:
+        self.task = task
+        self._undo_spell = None
+        self.heading.setText("EDIT TASK")
+        self.save_button.setText("Save changes")
+        self.title_edit.setText(task.get("title", ""))
+        self.notes.setPlainText(task.get("description", ""))
+        self.priority.setCurrentIndex(max(0, min(4, int(task.get("priority", 3)) - 1)))
+        self.deadline_toggle.setChecked(False)
+        self.deadline.setEnabled(False)
+        if task.get("deadline"):
+            try:
+                parsed = datetime.fromisoformat(
+                    task["deadline"].replace("Z", "+00:00")
+                ).astimezone()
+                self.deadline.setDateTime(
+                    QDateTime(parsed.year, parsed.month, parsed.day, parsed.hour, parsed.minute)
+                )
+                self.deadline_toggle.setChecked(True)
+            except ValueError:
+                pass
+        self.error.hide()
+        self.spell_status.clear()
+        self.undo_spell.hide()
+        self.show()
+        self.title_edit.setFocus()
+
+    def _toggle_deadline(self, checked: bool) -> None:
+        self.deadline.setEnabled(checked)
+        if checked:
+            self.deadline.setFocus()
+
+    def _check_spelling(self) -> None:
+        title = self.title_edit.text()
+        notes = self.notes.toPlainText()
+        fixed_title, title_changes = correct_text(title)
+        fixed_notes, note_changes = correct_text(notes)
+        changes = title_changes + note_changes
+        if not changes:
+            self.spell_status.setText("No obvious spelling issues.")
+            self.undo_spell.hide()
+            self._undo_spell = None
+            return
+        self._undo_spell = (title, notes)
+        self.title_edit.setText(fixed_title)
+        self.notes.setPlainText(fixed_notes)
+        preview = "  ·  ".join(f"{old} → {new}" for old, new in changes[:4])
+        more = f"  (+{len(changes) - 4} more)" if len(changes) > 4 else ""
+        self.spell_status.setText(f"Corrected: {preview}{more}")
+        self.undo_spell.show()
+
+    def _undo_spelling(self) -> None:
+        if not self._undo_spell:
+            return
+        title, notes = self._undo_spell
+        self.title_edit.setText(title)
+        self.notes.setPlainText(notes)
+        self._undo_spell = None
+        self.spell_status.setText("Spelling changes undone.")
+        self.undo_spell.hide()
+
+    def _submit(self) -> None:
+        if not self.title_edit.text().strip():
+            self.show_error("Give this task a title.")
+            return
+        self.error.hide()
+        self.saved.emit(self.payload())
+
+    def payload(self) -> dict:
+        deadline = None
+        if self.deadline_toggle.isChecked():
+            dt = self.deadline.dateTime().toPython()
+            if dt.tzinfo is None:
+                dt = dt.astimezone()
+            deadline = dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+        return {
+            "title": self.title_edit.text().strip(),
+            "description": self.notes.toPlainText().strip(),
+            "priority": int(self.priority.currentData()),
+            "deadline": deadline,
+        }
+
+    def show_error(self, message: str) -> None:
+        self.error.setText(message)
+        self.error.show()
 
 
 class TaskDialog(QDialog):

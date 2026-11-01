@@ -1,18 +1,22 @@
 # -*- mode: python ; coding: utf-8 -*-
 from pathlib import Path
 
+from PyInstaller.utils.hooks import collect_data_files
+
 repo = Path(SPECPATH).resolve()
 assets = repo / "desktop" / "assets"
 seed = repo / "seed" / "todo.db"
+datas = [
+    (str(assets), "desktop/assets"),
+    (str(seed), "seed"),
+]
+datas += collect_data_files("spellchecker")
 
 a = Analysis(
     ["desktop_app.py"],
     pathex=[str(repo)],
     binaries=[],
-    datas=[
-        (str(assets), "desktop/assets"),
-        (str(seed), "seed"),
-    ],
+    datas=datas,
     hiddenimports=[
         "sqlalchemy.dialects.sqlite",
         "sqlalchemy.sql.default_comparator",

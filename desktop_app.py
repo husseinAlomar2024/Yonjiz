@@ -88,11 +88,16 @@ def main() -> int:
     if "--smoke-test" in sys.argv:
         def finish_smoke() -> None:
             try:
+                from desktop.spellcheck import correct_text
+
+                fixed, changes = correct_text("Studdy teh breif and recieve it")
                 window.grab().save(str(DATA_DIR / "desktop-smoke.png"))
                 (DATA_DIR / "desktop-smoke.log").write_text(
                     f"visible={window.isVisible()}\n"
                     f"title={window.windowTitle()}\n"
-                    f"size={window.width()}x{window.height()}\n",
+                    f"size={window.width()}x{window.height()}\n"
+                    f"spell={fixed}\n"
+                    f"changes={changes}\n",
                     encoding="utf-8",
                 )
             finally:
