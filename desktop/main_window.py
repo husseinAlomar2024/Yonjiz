@@ -31,8 +31,8 @@ class MainWindow(QMainWindow):
         self.snapshot: dict = {}
         self.setWindowTitle("YONJIZ · ينجز")
         self.setWindowIcon(QIcon(str(icon_path())))
-        self.resize(1380, 900)
-        self.setMinimumSize(1080, 720)
+        self.resize(1440, 940)
+        self.setMinimumSize(1160, 780)
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
 
         self.topbar = QFrame()
         self.topbar.setObjectName("TopBar")
-        self.topbar.setFixedHeight(64)
+        self.topbar.setFixedHeight(74)
         top = QHBoxLayout(self.topbar)
         top.setContentsMargins(22, 8, 22, 8)
         top.setSpacing(14)
@@ -61,11 +61,11 @@ class MainWindow(QMainWindow):
 
         self.user_name = QLabel("")
         self.user_name.setStyleSheet(
-            f"color: {theme.INK}; font-size: 10px; font-weight: 700;"
+            f"color: {theme.INK}; font-size: 12px; font-weight: 700;"
         )
         top.addWidget(self.user_name, 0, Qt.AlignRight)
         self.user_role = QLabel("")
-        self.user_role.setStyleSheet(f"color: {theme.MUTED}; font-size: 8px;")
+        self.user_role.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
         top.addWidget(self.user_role, 0, Qt.AlignRight)
         self.logout_button = button("Log out", "GhostButton")
         self.logout_button.clicked.connect(self.logout)

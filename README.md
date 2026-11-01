@@ -40,12 +40,18 @@ The desktop edition is a **native Qt application**, not a browser wrapper:
 - The app includes the login screen, live analog clock, deadline calendar, task
   CRUD, filters, local account creation, the three-seat admin console and the
   protected main admin.
+- Larger, high-DPI-friendly typography and a **Show / Hide password** control on
+  both login and local account creation.
 - Keyboard shortcuts: `Ctrl+N` new task, `Ctrl+K` search, `Ctrl+1` workspace,
   `Ctrl+2` admin console, `Ctrl+L` log out.
 - Minimum window size is 1080×720; it opens at 1380×900.
 
 The current local install was built from this checkout and the seed kept your
 existing `hussein_alomar` main admin plus `hussein_1`.
+
+| Sign in | Password visible |
+| --- | --- |
+| ![Desktop login](docs/screenshots/desktop-login.png) | ![Password shown](docs/screenshots/desktop-login-password.png) |
 
 ### Rebuild the desktop app
 

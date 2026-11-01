@@ -79,7 +79,7 @@ def main() -> int:
     app.setOrganizationName("YONJIZ")
     app.setStyle("Fusion")
     app.setWindowIcon(QIcon(str(icon_path())))
-    app.setFont(QFont(theme.SANS, 10))
+    app.setFont(QFont(theme.SANS, 12))
     app.setStyleSheet(theme.QSS)
 
     service = DesktopService()

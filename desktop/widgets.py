@@ -111,7 +111,7 @@ class BrandWidget(QWidget):
         )
         arabic = label("ينجز", "BrandArabic")
         arabic.setStyleSheet(
-            f"font-size: 12px; font-weight: 700;"
+            f"font-size: 14px; font-weight: 700;"
             f" color: {'rgba(255,253,246,0.65)' if light else theme.MUTED};"
         )
         copy.addWidget(name)
@@ -188,7 +188,7 @@ class ClockCard(QFrame):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.setObjectName("ClockCard")
-        self.setFixedWidth(316)
+        self.setFixedWidth(336)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 18, 20, 18)
         layout.setSpacing(2)
@@ -198,17 +198,17 @@ class ClockCard(QFrame):
         left.setSpacing(1)
         eyebrow = label("LOCAL TIME", "Eyebrow")
         eyebrow.setStyleSheet(
-            f"color: rgba(255,253,246,0.58); font-size: 8px; letter-spacing: 1.4px;"
+            f"color: rgba(255,253,246,0.58); font-size: 10px; letter-spacing: 1.4px;"
         )
         left.addWidget(eyebrow)
         self.zone = label("", "Tiny")
-        self.zone.setStyleSheet("color: rgba(255,253,246,0.42); font-size: 9px;")
+        self.zone.setStyleSheet("color: rgba(255,253,246,0.42); font-size: 11px;")
         left.addWidget(self.zone)
         top.addLayout(left)
         top.addStretch(1)
         live = label("●  LIVE")
         live.setStyleSheet(
-            f"color: rgba(255,253,246,0.62); font-size: 8px; font-weight: 700;"
+            f"color: rgba(255,253,246,0.62); font-size: 10px; font-weight: 700;"
             " border: 1px solid rgba(255,253,246,0.16); border-radius: 9px; padding: 3px 7px;"
         )
         top.addWidget(live, 0, Qt.AlignTop)
@@ -220,7 +220,7 @@ class ClockCard(QFrame):
         self.time = QLabel("--:--")
         self.time.setAlignment(Qt.AlignCenter)
         self.time.setStyleSheet(
-            f"font-family: '{theme.DISPLAY}'; font-size: 38px; font-weight: 500;"
+            f"font-family: '{theme.DISPLAY}'; font-size: 46px; font-weight: 500;"
             " color: #fffdf6; letter-spacing: -2px;"
         )
         layout.addWidget(self.time)
@@ -228,7 +228,7 @@ class ClockCard(QFrame):
         self.date = QLabel("")
         self.date.setAlignment(Qt.AlignCenter)
         self.date.setStyleSheet(
-            "color: rgba(255,253,246,0.55); font-size: 10px;"
+            "color: rgba(255,253,246,0.55); font-size: 12px;"
         )
         layout.addWidget(self.date)
 
@@ -278,7 +278,7 @@ class StatCard(QFrame):
         super().__init__(parent)
         self.setObjectName("StatCard")
         self.setProperty("accent", accent)
-        self.setFixedHeight(82)
+        self.setFixedHeight(96)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(13, 10, 13, 9)
@@ -304,7 +304,7 @@ class TaskCard(QFrame):
         self.task = task
         self.setObjectName("TaskCard")
         self.setProperty("complete", task["complete"])
-        self.setMinimumHeight(66)
+        self.setMinimumHeight(78)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(12, 9, 9, 9)
         layout.setSpacing(9)
@@ -345,7 +345,7 @@ class TaskCard(QFrame):
         if deadline:
             date_label = label(f"◷ {deadline['text']}")
             date_label.setStyleSheet(
-                f"color: {theme.MUTED_LIGHT}; font-size: 9px;"
+                f"color: {theme.MUTED_LIGHT}; font-size: 11px;"
             )
             meta.addWidget(date_label)
             if deadline["state"] != "none":
@@ -355,27 +355,23 @@ class TaskCard(QFrame):
         else:
             no_deadline = label("No deadline")
             no_deadline.setStyleSheet(
-                f"color: {theme.MUTED_LIGHT}; font-size: 9px; font-style: italic;"
+                f"color: {theme.MUTED_LIGHT}; font-size: 11px; font-style: italic;"
             )
             meta.addWidget(no_deadline)
         meta.addStretch(1)
         body.addLayout(meta)
         layout.addLayout(body, 1)
 
-        actions = QHBoxLayout()
+        actions = QVBoxLayout()
         actions.setSpacing(2)
-        edit = button("✎", "CircleButton")
-        edit.setFixedSize(27, 27)
+        edit = button("Edit", "TableAction")
+        edit.setFixedSize(58, 27)
         edit.setToolTip("Edit task")
         edit.clicked.connect(lambda: self.edit_requested.emit(task))
         actions.addWidget(edit)
-        delete = button("×", "CircleButton")
-        delete.setFixedSize(27, 27)
+        delete = button("Delete", "TableDangerText")
+        delete.setFixedSize(58, 27)
         delete.setToolTip("Delete task")
-        delete.setStyleSheet(
-            f"QPushButton#CircleButton {{ color: {theme.MUTED}; }}"
-            "QPushButton#CircleButton:hover { color: #ae443d; border-color: #ae443d; background: #fae9e7; }"
-        )
         delete.clicked.connect(lambda: self.delete_requested.emit(task))
         actions.addWidget(delete)
         action_widget = QWidget()
@@ -428,7 +424,7 @@ class SeatCard(QFrame):
         top = QHBoxLayout()
         num = label(f"Seat {seat['slot']:02d}")
         num.setStyleSheet(
-            f"font-family: '{theme.DISPLAY}'; font-style: italic; font-size: 10px;"
+            f"font-family: '{theme.DISPLAY}'; font-style: italic; font-size: 12px;"
             f" color: {theme.CLAY if primary else theme.MUTED_LIGHT};"
         )
         top.addWidget(num)
@@ -455,16 +451,16 @@ class SeatCard(QFrame):
             )
             avatar.setStyleSheet(
                 f"background: {'#9b3f21' if user['is_primary_admin'] else theme.CLAY};"
-                f"color: #fffdf6; border-radius: 19px; font-size: 10px; font-weight: 700;"
+                f"color: #fffdf6; border-radius: 19px; font-size: 12px; font-weight: 700;"
             )
             detail.addWidget(avatar)
             copy = QVBoxLayout()
             copy.setSpacing(0)
             name = label(user["full_name"])
-            name.setStyleSheet(f"font-size: 11px; font-weight: 700; color: {theme.INK};")
+            name.setStyleSheet(f"font-size: 13px; font-weight: 700; color: {theme.INK};")
             copy.addWidget(name)
             username = label(f"@{user['username']}")
-            username.setStyleSheet(f"color: {theme.MUTED}; font-size: 9px;")
+            username.setStyleSheet(f"color: {theme.MUTED}; font-size: 11px;")
             copy.addWidget(username)
             detail.addLayout(copy)
             detail.addStretch(1)
@@ -476,14 +472,14 @@ class SeatCard(QFrame):
                 if user["is_primary_admin"]
                 else f"Since {(user.get('created_at') or '')[:7]}"
             )
-            since.setStyleSheet(f"color: {theme.MUTED_LIGHT}; font-size: 8px;")
+            since.setStyleSheet(f"color: {theme.MUTED_LIGHT}; font-size: 10px;")
             foot.addWidget(since)
             foot.addStretch(1)
             if user["is_primary_admin"]:
                 protected = label("🔒 PROTECTED")
                 protected.setStyleSheet(
                     f"color: #9b3f21; background: {theme.CLAY_SOFT}; border-radius: 8px;"
-                    " padding: 2px 7px; font-size: 7px; font-weight: 700;"
+                    " padding: 2px 7px; font-size: 8px; font-weight: 700;"
                 )
                 foot.addWidget(protected)
             elif seat["slot"] != 1:
@@ -496,14 +492,14 @@ class SeatCard(QFrame):
         else:
             layout.addStretch(1)
             open_title = label("An open seat")
-            open_title.setStyleSheet(f"font-size: 11px; font-weight: 700; color: {theme.INK};")
+            open_title.setStyleSheet(f"font-size: 13px; font-weight: 700; color: {theme.INK};")
             layout.addWidget(open_title)
             hint = label("Promote a member from the directory below.")
-            hint.setStyleSheet(f"color: {theme.MUTED}; font-size: 9px;")
+            hint.setStyleSheet(f"color: {theme.MUTED}; font-size: 11px;")
             layout.addWidget(hint)
             layout.addStretch(1)
             slot = label(f"SLOT {seat['slot']}")
-            slot.setStyleSheet(f"color: {theme.MUTED_LIGHT}; font-size: 8px;")
+            slot.setStyleSheet(f"color: {theme.MUTED_LIGHT}; font-size: 10px;")
             layout.addWidget(slot, 0, Qt.AlignRight)
 
 
@@ -513,7 +509,7 @@ class TaskDialog(QDialog):
         self.task = task or {}
         self.setWindowTitle("Edit task" if task else "New task")
         self.setModal(True)
-        self.setMinimumWidth(520)
+        self.setMinimumWidth(570)
         self.setStyleSheet(f"QDialog {{ background: {theme.PAPER}; }}")
         layout = QVBoxLayout(self)
         layout.setContentsMargins(26, 24, 26, 22)
@@ -523,7 +519,7 @@ class TaskDialog(QDialog):
         layout.addWidget(eyebrow)
         heading = label("Edit task" if task else "Add a task", "CardHeading")
         heading.setStyleSheet(
-            f"font-family: '{theme.DISPLAY}'; font-size: 27px; color: {theme.INK};"
+            f"font-family: '{theme.DISPLAY}'; font-size: 32px; color: {theme.INK};"
         )
         layout.addWidget(heading)
 
@@ -590,7 +586,7 @@ class TaskDialog(QDialog):
         self.error = QLabel("")
         self.error.setStyleSheet(
             f"color: {theme.DANGER}; background: {theme.DANGER_SOFT};"
-            " border-radius: 6px; padding: 6px 8px; font-size: 10px;"
+            " border-radius: 6px; padding: 6px 8px; font-size: 12px;"
         )
         self.error.hide()
         layout.addWidget(self.error)
@@ -610,7 +606,7 @@ class TaskDialog(QDialog):
     def _field_label(text: str) -> QLabel:
         item = QLabel(text)
         item.setStyleSheet(
-            f"color: {theme.INK_SOFT}; font-size: 9px; font-weight: 700;"
+            f"color: {theme.INK_SOFT}; font-size: 11px; font-weight: 700;"
         )
         return item
 
@@ -652,12 +648,12 @@ class RegisterDialog(QDialog):
         self.service = service
         self.setWindowTitle("Create local account")
         self.setModal(True)
-        self.setMinimumWidth(420)
+        self.setMinimumWidth(480)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 22, 24, 20)
-        layout.setSpacing(9)
+        layout.setContentsMargins(26, 24, 26, 22)
+        layout.setSpacing(10)
         title = label("Create a local account", "CardHeading")
-        title.setStyleSheet(f"font-family: '{theme.DISPLAY}'; font-size: 24px;")
+        title.setStyleSheet(f"font-family: '{theme.DISPLAY}'; font-size: 29px;")
         layout.addWidget(title)
         layout.addWidget(label("Regular account. The main admin can grant admin access.", "Muted"))
         for attr, placeholder in [
@@ -668,12 +664,26 @@ class RegisterDialog(QDialog):
         ]:
             field = QLineEdit()
             field.setPlaceholderText(placeholder)
+            field.setMinimumHeight(42)
             if attr == "password":
                 field.setEchoMode(QLineEdit.Password)
-            setattr(self, attr, field)
-            layout.addWidget(field)
+                setattr(self, attr, field)
+                row = QHBoxLayout()
+                row.setSpacing(6)
+                row.addWidget(field, 1)
+                self.register_show_password = button("Show", "SecondaryButton")
+                self.register_show_password.setCheckable(True)
+                self.register_show_password.setFixedWidth(68)
+                self.register_show_password.setMinimumHeight(42)
+                self.register_show_password.setToolTip("Show or hide the password")
+                self.register_show_password.toggled.connect(self._toggle_password)
+                row.addWidget(self.register_show_password)
+                layout.addLayout(row)
+            else:
+                setattr(self, attr, field)
+                layout.addWidget(field)
         self.error = label("")
-        self.error.setStyleSheet(f"color: {theme.DANGER}; font-size: 9px;")
+        self.error.setStyleSheet(f"color: {theme.DANGER}; font-size: 11px;")
         self.error.setWordWrap(True)
         layout.addWidget(self.error)
         actions = QHBoxLayout()
@@ -685,6 +695,10 @@ class RegisterDialog(QDialog):
         create.clicked.connect(self._create)
         actions.addWidget(create)
         layout.addLayout(actions)
+
+    def _toggle_password(self, shown: bool) -> None:
+        self.password.setEchoMode(QLineEdit.Normal if shown else QLineEdit.Password)
+        self.register_show_password.setText("Hide" if shown else "Show")
 
     def _create(self) -> None:
         try:

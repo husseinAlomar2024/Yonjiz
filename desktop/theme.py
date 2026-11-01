@@ -74,53 +74,53 @@ QFrame#TopBar {{
 }}
 QLabel#BrandName {{
     font-family: "{DISPLAY}";
-    font-size: 23px;
+    font-size: 28px;
     font-weight: 600;
     color: {INK};
     letter-spacing: -0.8px;
 }}
 QLabel#BrandArabic {{
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 700;
     color: {MUTED};
 }}
 QLabel#DisplayHeading {{
     font-family: "{DISPLAY}";
-    font-size: 42px;
+    font-size: 50px;
     font-weight: 500;
     color: {INK};
     letter-spacing: -1.4px;
 }}
 QLabel#AdminHeading {{
     font-family: "{DISPLAY}";
-    font-size: 46px;
+    font-size: 55px;
     font-weight: 500;
     color: {INK};
     letter-spacing: -1.6px;
 }}
 QLabel#CardHeading {{
     font-family: "{DISPLAY}";
-    font-size: 24px;
+    font-size: 29px;
     font-weight: 600;
     color: {INK};
     letter-spacing: -0.6px;
 }}
 QLabel#SectionHeading {{
     font-family: "{DISPLAY}";
-    font-size: 28px;
+    font-size: 34px;
     font-weight: 500;
     color: {INK};
     letter-spacing: -0.8px;
 }}
 QLabel#Eyebrow {{
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     color: {MUTED};
     letter-spacing: 1.6px;
     text-transform: uppercase;
 }}
 QLabel#EyebrowClay {{
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     color: {CLAY};
     letter-spacing: 1.6px;
@@ -128,14 +128,14 @@ QLabel#EyebrowClay {{
 }}
 QLabel#Muted {{
     color: {MUTED};
-    font-size: 11px;
+    font-size: 13px;
 }}
 QLabel#Tiny {{
     color: {MUTED_LIGHT};
-    font-size: 9px;
+    font-size: 11px;
 }}
 QLabel#TaskTitle {{
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 650;
     color: {INK};
 }}
@@ -145,12 +145,12 @@ QLabel#TaskTitle[complete="true"] {{
 }}
 QLabel#TaskDescription {{
     color: {MUTED};
-    font-size: 10px;
+    font-size: 12px;
 }}
 QLabel#PriorityChip {{
     border-radius: 8px;
     padding: 2px 7px;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.4px;
 }}
@@ -162,7 +162,7 @@ QLabel#PriorityChip[priority="5"] {{ background: {CLAY_SOFT}; color: #a14321; }}
 QLabel#DeadlineBadge {{
     border-radius: 8px;
     padding: 2px 6px;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
 }}
 QLabel#DeadlineBadge[state="overdue"] {{ background: {DANGER_SOFT}; color: {DANGER}; }}
@@ -175,7 +175,7 @@ QPushButton {{
     border: none;
     border-radius: 10px;
     padding: 9px 15px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 650;
     background: transparent;
 }}
@@ -198,6 +198,11 @@ QPushButton#SecondaryButton:hover {{
     border-color: {FOREST};
     color: {FOREST};
 }}
+QPushButton#SecondaryButton:checked {{
+    background: {FOREST_WASH};
+    border-color: {FOREST};
+    color: {FOREST};
+}}
 QPushButton#GhostButton {{
     background: transparent;
     color: {MUTED};
@@ -211,14 +216,14 @@ QPushButton#TextButton {{
     background: transparent;
     color: {FOREST};
     padding: 3px 4px;
-    font-size: 10px;
+    font-size: 12px;
 }}
 QPushButton#TextButton:hover {{ text-decoration: underline; }}
 QPushButton#DangerTextButton {{
     background: transparent;
     color: {DANGER};
     padding: 3px 4px;
-    font-size: 10px;
+    font-size: 12px;
 }}
 QPushButton#DangerTextButton:hover {{ text-decoration: underline; }}
 QPushButton#NavButton {{
@@ -226,7 +231,7 @@ QPushButton#NavButton {{
     color: {MUTED};
     border-radius: 15px;
     padding: 8px 14px;
-    font-size: 11px;
+    font-size: 13px;
 }}
 QPushButton#NavButton:hover {{ color: {INK}; background: {PAPER_SOFT}; }}
 QPushButton#NavButton:checked {{
@@ -239,7 +244,7 @@ QPushButton#FilterButton {{
     color: {MUTED};
     border-radius: 12px;
     padding: 6px 12px;
-    font-size: 10px;
+    font-size: 12px;
 }}
 QPushButton#FilterButton:hover {{ color: {INK}; }}
 QPushButton#FilterButton:checked {{
@@ -252,7 +257,7 @@ QPushButton#CircleButton {{
     border: 1px solid {LINE_STRONG};
     border-radius: 12px;
     color: {MUTED};
-    font-size: 15px;
+    font-size: 18px;
     padding: 0;
 }}
 QPushButton#CircleButton:hover {{
@@ -265,7 +270,7 @@ QPushButton#CheckButton {{
     border: 1px solid {LINE_STRONG};
     border-radius: 11px;
     color: transparent;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     padding: 0;
 }}
@@ -278,7 +283,7 @@ QPushButton#CheckButton[checked="true"] {{
 QPushButton#SeatAction {{
     background: transparent;
     color: {DANGER};
-    font-size: 9px;
+    font-size: 11px;
     padding: 2px;
 }}
 QPushButton#TableAction {{
@@ -286,7 +291,7 @@ QPushButton#TableAction {{
     border: 1px solid {LINE};
     border-radius: 6px;
     color: {INK_SOFT};
-    font-size: 8px;
+    font-size: 10px;
     padding: 4px 7px;
 }}
 QPushButton#TableAction:hover {{
@@ -298,10 +303,21 @@ QPushButton#TableDanger {{
     background: transparent;
     border: none;
     color: {MUTED};
-    font-size: 11px;
+    font-size: 13px;
     padding: 2px;
 }}
 QPushButton#TableDanger:hover {{ color: {DANGER}; }}
+QPushButton#TableDangerText {{
+    background: transparent;
+    border: 1px solid transparent;
+    color: {DANGER};
+    font-size: 10px;
+    padding: 3px 7px;
+}}
+QPushButton#TableDangerText:hover {{
+    background: {DANGER_SOFT};
+    border-color: #f2d2cf;
+}}
 
 QLineEdit, QTextEdit, QComboBox, QDateTimeEdit, QSpinBox {{
     background: #fffefa;
@@ -309,7 +325,7 @@ QLineEdit, QTextEdit, QComboBox, QDateTimeEdit, QSpinBox {{
     border-radius: 9px;
     padding: 9px 11px;
     color: {INK};
-    font-size: 11px;
+    font-size: 13px;
     selection-background-color: {FOREST_WASH};
     selection-color: {INK};
 }}
@@ -331,7 +347,7 @@ QComboBox QAbstractItemView {{
     padding: 4px;
 }}
 QComboBox QAbstractItemView::item {{ padding: 5px 8px; }}
-QCheckBox {{ color: {INK_SOFT}; font-size: 11px; spacing: 7px; }}
+QCheckBox {{ color: {INK_SOFT}; font-size: 13px; spacing: 7px; }}
 QCheckBox::indicator {{
     width: 16px; height: 16px;
     border: 1px solid {LINE_STRONG};
@@ -358,7 +374,7 @@ QCalendarWidget QToolButton {{
     border: none;
     color: {INK};
     font-family: "{DISPLAY}";
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 600;
     padding: 4px 6px;
     border-radius: 7px;
@@ -368,7 +384,7 @@ QCalendarWidget QSpinBox {{
     background: transparent;
     border: none;
     color: {INK};
-    font-size: 12px;
+    font-size: 14px;
 }}
 QCalendarWidget QAbstractItemView:enabled {{
     background: {PAPER};
@@ -376,7 +392,7 @@ QCalendarWidget QAbstractItemView:enabled {{
     selection-background-color: {FOREST};
     selection-color: #fffdf6;
     border: none;
-    font-size: 10px;
+    font-size: 12px;
     outline: none;
 }}
 QCalendarWidget QAbstractItemView:disabled {{ color: {MUTED_LIGHT}; }}
@@ -403,7 +419,7 @@ QTableWidget {{
     border: none;
     border-top: 1px solid {LINE};
     gridline-color: transparent;
-    font-size: 10px;
+    font-size: 12px;
     selection-background-color: {PAPER_SOFT};
     selection-color: {INK};
 }}
@@ -417,7 +433,7 @@ QHeaderView::section {{
     border: none;
     border-bottom: 1px solid {LINE};
     padding: 7px;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.6px;
 }}
@@ -429,7 +445,7 @@ QDialog {{
 QMessageBox {{
     background: {PAPER};
 }}
-QMessageBox QLabel {{ font-size: 11px; }}
+QMessageBox QLabel {{ font-size: 13px; }}
 QToolTip {{
     background: {INK};
     color: #fffdf6;
@@ -440,7 +456,7 @@ QStatusBar {{
     background: {PAPER};
     border-top: 1px solid {LINE};
     color: {MUTED};
-    font-size: 9px;
+    font-size: 11px;
 }}
 
 QFrame#SeatCard {{
@@ -461,21 +477,21 @@ QFrame#StatCard {{
 QFrame#StatCard[accent="today"] {{ border-top: 2px solid {GOLD}; }}
 QFrame#StatCard[accent="overdue"] {{ border-top: 2px solid {CLAY}; }}
 QFrame#StatCard[accent="open"] {{ border-top: 2px solid {FOREST}; }}
-QLabel#StatLabel {{ color: {MUTED}; font-size: 8px; font-weight: 700; letter-spacing: 0.8px; }}
-QLabel#StatValue {{ font-family: "{DISPLAY}"; font-size: 26px; font-weight: 500; color: {INK}; }}
-QLabel#StatFoot {{ color: {MUTED_LIGHT}; font-size: 8px; }}
+QLabel#StatLabel {{ color: {MUTED}; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; }}
+QLabel#StatValue {{ font-family: "{DISPLAY}"; font-size: 31px; font-weight: 500; color: {INK}; }}
+QLabel#StatFoot {{ color: {MUTED_LIGHT}; font-size: 10px; }}
 QLabel#SeatBadge {{
-    border-radius: 8px; padding: 2px 7px; font-size: 7px; font-weight: 700;
+    border-radius: 8px; padding: 2px 7px; font-size: 8px; font-weight: 700;
     background: {FOREST_WASH}; color: {FOREST};
 }}
 QLabel#SeatBadge[primary="true"] {{ background: {CLAY_SOFT}; color: #9b3f21; }}
 QLabel#SeatBadge[open="true"] {{ background: {PAPER_SOFT}; color: {MUTED}; }}
 QLabel#RoleBadge {{
-    border-radius: 8px; padding: 2px 6px; font-size: 8px; font-weight: 700;
+    border-radius: 8px; padding: 2px 6px; font-size: 10px; font-weight: 700;
     background: {PAPER_SOFT}; color: {MUTED};
 }}
 QLabel#RoleBadge[role="admin"] {{ background: {FOREST}; color: #fffdf6; }}
 QLabel#RoleBadge[role="primary"] {{ background: {CLAY}; color: #fffdf6; }}
-QLabel#ProtectedLabel {{ color: #9b3f21; font-size: 9px; font-weight: 700; }}
-QLabel#SearchIcon {{ color: {MUTED_LIGHT}; font-size: 12px; }}
+QLabel#ProtectedLabel {{ color: #9b3f21; font-size: 11px; font-weight: 700; }}
+QLabel#SearchIcon {{ color: {MUTED_LIGHT}; font-size: 14px; }}
 """

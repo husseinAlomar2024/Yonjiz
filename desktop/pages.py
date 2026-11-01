@@ -53,6 +53,7 @@ def clear_layout(layout) -> None:
         item = layout.takeAt(0)
         widget = item.widget()
         if widget is not None:
+            widget.hide()
             widget.deleteLater()
         child = item.layout()
         if child is not None:
@@ -68,7 +69,7 @@ def card() -> QFrame:
 def section_heading(text: str) -> QLabel:
     item = label(text, "SectionHeading")
     item.setStyleSheet(
-        f"font-family: '{theme.DISPLAY}'; font-size: 28px; font-weight: 500;"
+        f"font-family: '{theme.DISPLAY}'; font-size: 34px; font-weight: 500;"
         f" color: {theme.INK}; letter-spacing: -0.8px;"
     )
     return item
@@ -92,7 +93,7 @@ class LoginPage(QWidget):
         root.setSpacing(0)
 
         aside = QFrame()
-        aside.setFixedWidth(520)
+        aside.setFixedWidth(560)
         aside.setStyleSheet(
             f"QFrame {{ background: {theme.FOREST_DEEP}; }}"
             "QLabel { background: transparent; }"
@@ -105,18 +106,18 @@ class LoginPage(QWidget):
 
         eyebrow = label("A QUIETER WORKSPACE", "Eyebrow")
         eyebrow.setStyleSheet(
-            "color: rgba(255,253,246,0.55); font-size: 8px; letter-spacing: 1.6px;"
+            "color: rgba(255,253,246,0.55); font-size: 10px; letter-spacing: 1.6px;"
         )
         aside_layout.addWidget(eyebrow)
         hero = QLabel("The day is yours.")
         hero.setStyleSheet(
-            f"font-family: '{theme.DISPLAY}'; font-size: 44px; color: #fffdf6;"
+            f"font-family: '{theme.DISPLAY}'; font-size: 53px; color: #fffdf6;"
             " letter-spacing: -1.6px;"
         )
         aside_layout.addWidget(hero)
         hero2 = QLabel("Pick up a thread.")
         hero2.setStyleSheet(
-            f"font-family: '{theme.DISPLAY}'; font-size: 44px; color: #e7a082;"
+            f"font-family: '{theme.DISPLAY}'; font-size: 53px; color: #e7a082;"
             " font-style: italic; letter-spacing: -1.6px;"
         )
         aside_layout.addWidget(hero2)
@@ -126,15 +127,16 @@ class LoginPage(QWidget):
         )
         copy.setWordWrap(True)
         copy.setStyleSheet(
-            "color: rgba(255,253,246,0.58); font-size: 11px; line-height: 1.5;"
+            "color: rgba(255,253,246,0.58); font-size: 13px; line-height: 1.5;"
             " margin-top: 16px;"
         )
         aside_layout.addWidget(copy)
         aside_layout.addSpacing(28)
 
         feature_card = QFrame()
+        feature_card.setObjectName("FeatureCard")
         feature_card.setStyleSheet(
-            "QFrame { background: rgba(255,253,246,0.055);"
+            "QFrame#FeatureCard { background: rgba(255,253,246,0.055);"
             " border: 1px solid rgba(255,253,246,0.12); border-radius: 15px; }"
         )
         f_layout = QVBoxLayout(feature_card)
@@ -147,14 +149,14 @@ class LoginPage(QWidget):
             row = QHBoxLayout()
             ico = QLabel(mark)
             ico.setFixedWidth(22)
-            ico.setStyleSheet("color: #e7a082; font-size: 14px;")
+            ico.setStyleSheet("color: #e7a082; font-size: 17px;")
             row.addWidget(ico)
             text = QVBoxLayout()
             text.setSpacing(0)
             t = QLabel(title)
-            t.setStyleSheet("color: rgba(255,253,246,0.85); font-size: 10px; font-weight: 600;")
+            t.setStyleSheet("color: rgba(255,253,246,0.85); font-size: 12px; font-weight: 600;")
             d = QLabel(detail)
-            d.setStyleSheet("color: rgba(255,253,246,0.38); font-size: 9px;")
+            d.setStyleSheet("color: rgba(255,253,246,0.38); font-size: 11px;")
             text.addWidget(t)
             text.addWidget(d)
             row.addLayout(text, 1)
@@ -164,7 +166,7 @@ class LoginPage(QWidget):
         foot = QLabel("Quiet by design. Built for the work that matters.")
         foot.setStyleSheet(
             f"font-family: '{theme.DISPLAY}'; font-style: italic;"
-            " color: rgba(255,253,246,0.28); font-size: 9px;"
+            " color: rgba(255,253,246,0.28); font-size: 11px;"
         )
         aside_layout.addWidget(foot)
         root.addWidget(aside)
@@ -177,48 +179,58 @@ class LoginPage(QWidget):
         right_layout.addStretch(1)
         login_card = QFrame()
         login_card.setObjectName("Card")
-        login_card.setFixedWidth(430)
+        login_card.setFixedWidth(480)
         card_layout = QVBoxLayout(login_card)
         card_layout.setContentsMargins(34, 32, 34, 28)
         card_layout.setSpacing(0)
         card_layout.addWidget(label("ACCOUNT ACCESS", "Eyebrow"))
         title = QLabel("Log in.")
         title.setStyleSheet(
-            f"font-family: '{theme.DISPLAY}'; font-size: 40px; color: {theme.INK};"
+            f"font-family: '{theme.DISPLAY}'; font-size: 48px; color: {theme.INK};"
             " letter-spacing: -1.5px; margin-top: 4px;"
         )
         card_layout.addWidget(title)
         sub = QLabel("Open your local workspace. Everything stays on this PC.")
         sub.setWordWrap(True)
-        sub.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px; margin-bottom: 16px;")
+        sub.setStyleSheet(f"color: {theme.MUTED}; font-size: 12px; margin-bottom: 16px;")
         card_layout.addWidget(sub)
 
         card_layout.addWidget(self._field_label("Username"))
         self.username = QLineEdit()
         self.username.setPlaceholderText("your_username")
-        self.username.setMinimumHeight(38)
+        self.username.setMinimumHeight(46)
         card_layout.addWidget(self.username)
         card_layout.addSpacing(10)
         card_layout.addWidget(self._field_label("Password"))
+        password_row = QHBoxLayout()
+        password_row.setSpacing(6)
         self.password = QLineEdit()
         self.password.setPlaceholderText("Your password")
         self.password.setEchoMode(QLineEdit.Password)
-        self.password.setMinimumHeight(38)
+        self.password.setMinimumHeight(46)
         self.password.returnPressed.connect(self._submit)
-        card_layout.addWidget(self.password)
+        password_row.addWidget(self.password, 1)
+        self.show_password = button("Show", "SecondaryButton")
+        self.show_password.setCheckable(True)
+        self.show_password.setFixedWidth(68)
+        self.show_password.setMinimumHeight(46)
+        self.show_password.setToolTip("Show or hide the password")
+        self.show_password.toggled.connect(self._toggle_password)
+        password_row.addWidget(self.show_password)
+        card_layout.addLayout(password_row)
 
         self.error = QLabel("")
         self.error.setWordWrap(True)
         self.error.setStyleSheet(
             f"color: {theme.DANGER}; background: {theme.DANGER_SOFT};"
-            " border-radius: 6px; padding: 7px 9px; font-size: 9px; margin-top: 10px;"
+            " border-radius: 6px; padding: 7px 9px; font-size: 11px; margin-top: 10px;"
         )
         self.error.hide()
         card_layout.addWidget(self.error)
         card_layout.addSpacing(14)
 
         sign_in = button("Open my workspace  →", "PrimaryButton")
-        sign_in.setMinimumHeight(46)
+        sign_in.setMinimumHeight(52)
         sign_in.clicked.connect(self._submit)
         card_layout.addWidget(sign_in)
         card_layout.addSpacing(10)
@@ -233,7 +245,7 @@ class LoginPage(QWidget):
         offline = QLabel("●  OFFLINE  ·  NO SERVER  ·  NO INTERNET")
         offline.setAlignment(Qt.AlignCenter)
         offline.setStyleSheet(
-            f"color: {theme.MUTED_LIGHT}; font-size: 7px; letter-spacing: 0.7px;"
+            f"color: {theme.MUTED_LIGHT}; font-size: 8px; letter-spacing: 0.7px;"
             f" border-top: 1px solid {theme.LINE}; padding-top: 13px;"
         )
         card_layout.addWidget(offline)
@@ -247,14 +259,21 @@ class LoginPage(QWidget):
     def _field_label(text: str) -> QLabel:
         item = QLabel(text)
         item.setStyleSheet(
-            f"color: {theme.INK_SOFT}; font-size: 9px; font-weight: 700;"
+            f"color: {theme.INK_SOFT}; font-size: 11px; font-weight: 700;"
         )
         return item
 
     def reset(self) -> None:
         self.error.hide()
         self.password.clear()
+        self.show_password.setChecked(False)
+        self.password.setEchoMode(QLineEdit.Password)
+        self.show_password.setText("Show")
         self.username.setFocus()
+
+    def _toggle_password(self, shown: bool) -> None:
+        self.password.setEchoMode(QLineEdit.Normal if shown else QLineEdit.Password)
+        self.show_password.setText("Hide" if shown else "Show")
 
     def _submit(self) -> None:
         self.error.hide()
@@ -311,7 +330,7 @@ class WorkspacePage(QWidget):
 
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
-        sidebar.setFixedWidth(316)
+        sidebar.setFixedWidth(336)
         side = QVBoxLayout(sidebar)
         side.setContentsMargins(0, 0, 0, 0)
         side.setSpacing(13)
@@ -334,8 +353,8 @@ class WorkspacePage(QWidget):
         self.calendar.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
         self.calendar.setHorizontalHeaderFormat(QCalendarWidget.ShortDayNames)
         self.calendar.setFirstDayOfWeek(Qt.Sunday)
-        self.calendar.setMinimumHeight(220)
-        self.calendar.setMaximumHeight(250)
+        self.calendar.setMinimumHeight(260)
+        self.calendar.setMaximumHeight(300)
         self.calendar.selectionChanged.connect(self._calendar_changed)
         cal_layout.addWidget(self.calendar)
         legend = QHBoxLayout()
@@ -362,7 +381,7 @@ class WorkspacePage(QWidget):
         p_text.addWidget(label("DAY PROGRESS", "Eyebrow"))
         self.progress_title = label("A fresh start")
         self.progress_title.setStyleSheet(
-            f"font-size: 11px; font-weight: 700; color: {theme.INK};"
+            f"font-size: 13px; font-weight: 700; color: {theme.INK};"
         )
         p_text.addWidget(self.progress_title)
         self.progress_detail = label("Add a task to begin.", "Muted")
@@ -383,14 +402,14 @@ class WorkspacePage(QWidget):
         greeting.setSpacing(3)
         self.heading = QLabel("Hello.")
         self.heading.setStyleSheet(
-            f"font-family: '{theme.DISPLAY}'; font-size: 39px; color: {theme.INK};"
+            f"font-family: '{theme.DISPLAY}'; font-size: 47px; color: {theme.INK};"
             " letter-spacing: -1.4px;"
         )
         greeting.addWidget(self.heading)
         self.lede = QLabel(
             "Here’s the shape of your day. Keep it light, or give something a deadline."
         )
-        self.lede.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
+        self.lede.setStyleSheet(f"color: {theme.MUTED}; font-size: 12px;")
         greeting.addWidget(self.lede)
         greeting_row.addLayout(greeting, 1)
         self.new_button = button("+  New task", "PrimaryButton")
@@ -421,7 +440,7 @@ class WorkspacePage(QWidget):
         self.count_label = label("0")
         self.count_label.setStyleSheet(
             f"background: {theme.PAPER_SOFT}; color: {theme.MUTED};"
-            " border-radius: 8px; padding: 2px 7px; font-size: 9px; font-weight: 700;"
+            " border-radius: 8px; padding: 2px 7px; font-size: 11px; font-weight: 700;"
         )
         title_row.addWidget(self.count_label, 0, Qt.AlignVCenter)
         head.addLayout(title_row)
@@ -461,7 +480,7 @@ class WorkspacePage(QWidget):
         self.active_date = label("", "Tiny")
         self.active_date.setStyleSheet(
             f"color: #7f5b1f; background: #fdf8ec; border: 1px solid {theme.GOLD_SOFT};"
-            " border-radius: 7px; padding: 5px 8px; font-size: 9px;"
+            " border-radius: 7px; padding: 5px 8px; font-size: 11px;"
         )
         self.active_date.hide()
         panel_layout.addWidget(self.active_date)
@@ -483,7 +502,7 @@ class WorkspacePage(QWidget):
 
     def _legend(self, text: str, colour: str) -> QLabel:
         item = label(text)
-        item.setStyleSheet(f"color: {color_muted(colour)}; font-size: 8px;")
+        item.setStyleSheet(f"color: {color_muted(colour)}; font-size: 10px;")
         return item
 
     def set_snapshot(self, snapshot: dict) -> None:
@@ -657,12 +676,12 @@ class WorkspacePage(QWidget):
             box.setSpacing(5)
             icon = QLabel("✦")
             icon.setAlignment(Qt.AlignCenter)
-            icon.setStyleSheet(f"color: {theme.CLAY}; font-size: 23px;")
+            icon.setStyleSheet(f"color: {theme.CLAY}; font-size: 28px;")
             box.addWidget(icon)
             head = QLabel("A clear page." if not all_tasks else "Nothing matches that view.")
             head.setAlignment(Qt.AlignCenter)
             head.setStyleSheet(
-                f"font-family: '{theme.DISPLAY}'; font-size: 22px; color: {theme.INK};"
+                f"font-family: '{theme.DISPLAY}'; font-size: 26px; color: {theme.INK};"
             )
             box.addWidget(head)
             text = QLabel(
@@ -672,7 +691,7 @@ class WorkspacePage(QWidget):
             )
             text.setAlignment(Qt.AlignCenter)
             text.setWordWrap(True)
-            text.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
+            text.setStyleSheet(f"color: {theme.MUTED}; font-size: 12px;")
             box.addWidget(text)
             if not all_tasks:
                 add = button("Add your first task", "SecondaryButton")
@@ -778,14 +797,14 @@ class AdminPage(QWidget):
         heading = QLabel("The people and<br><i>the work.</i>")
         heading.setTextFormat(Qt.RichText)
         heading.setStyleSheet(
-            f"font-family: '{theme.DISPLAY}'; font-size: 45px; color: {theme.INK};"
+            f"font-family: '{theme.DISPLAY}'; font-size: 54px; color: {theme.INK};"
             " letter-spacing: -1.5px; line-height: 0.9;"
         )
         layout.addWidget(heading)
         self.lede = QLabel(
             "A compact view of every account and task. Three seats, one protected main admin."
         )
-        self.lede.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
+        self.lede.setStyleSheet(f"color: {theme.MUTED}; font-size: 12px;")
         layout.addWidget(self.lede)
         layout.addSpacing(4)
 
@@ -826,11 +845,11 @@ class AdminPage(QWidget):
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setFocusPolicy(Qt.NoFocus)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        for col, width in [(1, 135), (2, 90), (3, 60), (4, 105), (5, 230)]:
+        for col, width in [(1, 150), (2, 100), (3, 70), (4, 115), (5, 265)]:
             self.table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Fixed)
             self.table.setColumnWidth(col, width)
         self.table.setMinimumHeight(180)
-        self.table.setMaximumHeight(260)
+        self.table.setMaximumHeight(290)
         up_layout.addWidget(self.table)
         foot = QLabel(
             "The main admin is permanently protected. Other admins can hire or demote admins, but never the main admin."
@@ -838,7 +857,7 @@ class AdminPage(QWidget):
         foot.setWordWrap(True)
         foot.setStyleSheet(
             f"color: {theme.MUTED}; background: {theme.PAPER_SOFT};"
-            f" border-top: 1px solid {theme.LINE}; padding: 8px 2px; font-size: 8px;"
+            f" border-top: 1px solid {theme.LINE}; padding: 8px 2px; font-size: 10px;"
         )
         up_layout.addWidget(foot)
         layout.addWidget(users_panel)
@@ -866,19 +885,20 @@ class AdminPage(QWidget):
         lower.addWidget(self.activity_panel, 1)
 
         safety = QFrame()
+        safety.setObjectName("SafetyCard")
         safety.setStyleSheet(
-            f"QFrame {{ background: {theme.FOREST_DEEP}; border-radius: 16px; }}"
-            "QLabel { background: transparent; }"
+            f"QFrame#SafetyCard {{ background: {theme.FOREST_DEEP}; border-radius: 16px; }}"
+            "QFrame#SafetyCard QLabel { background: transparent; }"
         )
         sp = QVBoxLayout(safety)
         sp.setContentsMargins(18, 16, 18, 16)
         sp.setSpacing(5)
         shield = QLabel("◈")
-        shield.setStyleSheet(f"color: {theme.CLAY}; font-size: 18px;")
+        shield.setStyleSheet(f"color: {theme.CLAY}; font-size: 22px;")
         sp.addWidget(shield)
         why = QLabel("Why three?")
         why.setStyleSheet(
-            f"font-family: '{theme.DISPLAY}'; font-size: 20px; color: #fffdf6;"
+            f"font-family: '{theme.DISPLAY}'; font-size: 24px; color: #fffdf6;"
         )
         sp.addWidget(why)
         why_text = QLabel(
@@ -886,7 +906,7 @@ class AdminPage(QWidget):
             "hired and released — never the main account."
         )
         why_text.setWordWrap(True)
-        why_text.setStyleSheet("color: rgba(255,253,246,0.55); font-size: 9px;")
+        why_text.setStyleSheet("color: rgba(255,253,246,0.55); font-size: 11px;")
         sp.addWidget(why_text)
         sp.addStretch(1)
         lower.addWidget(safety, 1)
@@ -928,7 +948,7 @@ class AdminPage(QWidget):
         for person in users:
             row = self.table.rowCount()
             self.table.insertRow(row)
-            self.table.setRowHeight(row, 54)
+            self.table.setRowHeight(row, 62)
             self.table.setItem(row, 0, QTableWidgetItem(""))
             self.table.setCellWidget(row, 0, self._person_widget(person))
             access = QLabel(
@@ -945,14 +965,14 @@ class AdminPage(QWidget):
             status = QLabel("●  Active" if person["is_active"] else "●  Inactive")
             status.setStyleSheet(
                 f"color: {theme.SUCCESS if person['is_active'] else theme.MUTED_LIGHT};"
-                " font-size: 9px;"
+                " font-size: 11px;"
             )
             self.table.setCellWidget(row, 2, self._center(status))
             tasks = QLabel(f"{person['completed_count']}/{person['task_count']}")
-            tasks.setStyleSheet(f"color: {theme.INK_SOFT}; font-size: 9px; font-weight: 600;")
+            tasks.setStyleSheet(f"color: {theme.INK_SOFT}; font-size: 11px; font-weight: 600;")
             self.table.setCellWidget(row, 3, self._center(tasks))
             joined = QLabel((person.get("created_at") or "")[:10])
-            joined.setStyleSheet(f"color: {theme.MUTED}; font-size: 8px;")
+            joined.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
             self.table.setCellWidget(row, 4, self._center(joined))
             self.table.setCellWidget(row, 5, self._actions_widget(person))
         self._filter_users(self.user_search.text())
@@ -975,7 +995,7 @@ class AdminPage(QWidget):
         avatar.setAlignment(Qt.AlignCenter)
         avatar.setStyleSheet(
             f"background: {'#9b3f21' if person['is_primary_admin'] else theme.CLAY};"
-            "color: #fffdf6; border-radius: 15px; font-size: 8px; font-weight: 700;"
+            "color: #fffdf6; border-radius: 15px; font-size: 10px; font-weight: 700;"
         )
         layout.addWidget(avatar)
         copy = QVBoxLayout()
@@ -984,10 +1004,10 @@ class AdminPage(QWidget):
             person["full_name"]
             + ("  YOU" if person["id"] == self.current_user_id else "")
         )
-        name.setStyleSheet(f"font-size: 9px; font-weight: 700; color: {theme.INK};")
+        name.setStyleSheet(f"font-size: 11px; font-weight: 700; color: {theme.INK};")
         copy.addWidget(name)
         username = QLabel(f"@{person['username']}  ·  {person['email']}")
-        username.setStyleSheet(f"color: {theme.MUTED}; font-size: 8px;")
+        username.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
         copy.addWidget(username)
         layout.addLayout(copy, 1)
         return wrap
@@ -1043,15 +1063,15 @@ class AdminPage(QWidget):
             layout = QHBoxLayout(row)
             layout.setContentsMargins(0, 4, 0, 4)
             dot = QLabel("●")
-            dot.setStyleSheet(f"color: {priority_colour(task['priority'])}; font-size: 7px;")
+            dot.setStyleSheet(f"color: {priority_colour(task['priority'])}; font-size: 8px;")
             layout.addWidget(dot)
             text = QVBoxLayout()
             text.setSpacing(0)
             title = QLabel(task["title"])
-            title.setStyleSheet(f"font-size: 9px; font-weight: 600; color: {theme.INK};")
+            title.setStyleSheet(f"font-size: 11px; font-weight: 600; color: {theme.INK};")
             text.addWidget(title)
             meta = QLabel(f"@{task['owner']}  ·  {'Done' if task['complete'] else 'No deadline' if not task.get('deadline') else task['deadline'][:10]}")
-            meta.setStyleSheet(f"color: {theme.MUTED}; font-size: 8px;")
+            meta.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
             text.addWidget(meta)
             layout.addLayout(text, 1)
             delete = button("×", "TableDanger")
@@ -1079,14 +1099,14 @@ class AdminPage(QWidget):
             layout.setContentsMargins(0, 3, 0, 3)
             layout.setSpacing(0)
             action = QLabel(labels.get(entry["action"], entry["action"]))
-            action.setStyleSheet(f"font-size: 9px; font-weight: 700; color: {theme.INK};")
+            action.setStyleSheet(f"font-size: 11px; font-weight: 700; color: {theme.INK};")
             layout.addWidget(action)
             if entry.get("target_label"):
                 target = QLabel(entry["target_label"])
-                target.setStyleSheet(f"color: {theme.MUTED}; font-size: 8px;")
+                target.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
                 layout.addWidget(target)
             meta = QLabel(f"{entry['actor']}  ·  {entry['created_at'][:16].replace('T', ' ')} UTC")
-            meta.setStyleSheet(f"color: {theme.MUTED_LIGHT}; font-size: 7px;")
+            meta.setStyleSheet(f"color: {theme.MUTED_LIGHT}; font-size: 8px;")
             layout.addWidget(meta)
             self.activity_box.addWidget(item)
         if not self.data.get("audit"):
