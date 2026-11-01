@@ -23,7 +23,50 @@ The original code is preserved in spirit (FastAPI + SQLAlchemy + Jinja) but the 
 | --- | --- |
 | ![Landing page](docs/screenshots/landing.png) | ![Admin console](docs/screenshots/admin.png) |
 
-## Quick start
+## Native desktop app (offline)
+
+![YONJIZ desktop workspace](docs/screenshots/desktop-workspace.png)
+
+The desktop edition is a **native Qt application**, not a browser wrapper:
+
+- Click **YONJIZ** on the Windows Desktop, or run:
+  ```text
+  %LOCALAPPDATA%\Programs\YONJIZ\YONJIZ.exe
+  ```
+- No FastAPI, Uvicorn, localhost port, browser, or internet connection is used.
+  The UI talks directly to SQLite in the same process.
+- The database lives in `%LOCALAPPDATA%\YONJIZ\todo.db`.
+- The first launch seeds that folder with the current workspace (accounts and tasks).
+- The app includes the login screen, live analog clock, deadline calendar, task
+  CRUD, filters, local account creation, the three-seat admin console and the
+  protected main admin.
+- Keyboard shortcuts: `Ctrl+N` new task, `Ctrl+K` search, `Ctrl+1` workspace,
+  `Ctrl+2` admin console, `Ctrl+L` log out.
+- Minimum window size is 1080×720; it opens at 1380×900.
+
+The current local install was built from this checkout and the seed kept your
+existing `hussein_alomar` main admin plus `hussein_1`.
+
+### Rebuild the desktop app
+
+```powershell
+python -m venv .venv-desktop
+.\.venv-desktop\Scripts\python.exe -m pip install -r desktop\requirements-desktop.txt
+.\build_desktop.ps1
+```
+
+`build_desktop.ps1` backs up the current database into `seed\todo.db`, builds
+`dist\YONJIZ\YONJIZ.exe`, smoke-tests the package, installs it under
+`%LOCALAPPDATA%\Programs\YONJIZ`, and recreates the `YONJIZ.lnk` Desktop shortcut.
+
+> The desktop database is intentionally separate from the web app's `todo.db`.
+> It is seeded at build time and then evolves locally, so the app never needs a
+> server to run.
+
+## Web edition (optional)
+
+The desktop app is the recommended way to use YONJIZ. This web edition remains
+for browser use and for reference; it needs a local FastAPI process.
 
 Requires Python 3.11+ (verified on 3.13 and 3.14).
 
@@ -134,6 +177,13 @@ The suite covers registration/login, password hashing, inactive accounts, owner-
 ## Project layout
 
 ```text
+desktop_app.py           native Qt entry point; no server, no network
+desktop/service.py       direct SQLite task/admin service
+desktop/pages.py         login, workspace and admin pages
+desktop/widgets.py       clock, calendar cards, task cards, dialogs
+desktop/assets/          app icon and brand mark
+build_desktop.ps1        package/install/create Desktop shortcut
+YONJIZ.spec              PyInstaller build definition
 main.py                  FastAPI app, security headers, error pages
 config.py                env/config and generated local secrets
 database.py              engine, session, SQLite pragmas
