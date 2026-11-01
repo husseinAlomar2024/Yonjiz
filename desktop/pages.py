@@ -19,7 +19,6 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLabel,
     QLineEdit,
-    QMessageBox,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -29,7 +28,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from desktop import theme
+from desktop import i18n, theme
 from desktop.service import DesktopError, DesktopService
 from desktop.widgets import (
     BrandWidget,
@@ -82,6 +81,7 @@ def priority_colour(value: int) -> str:
 
 class LoginPage(QWidget):
     logged_in = Signal(dict)
+    language_requested = Signal()
 
     def __init__(self, service: DesktopService, parent: Optional[QWidget] = None):
         super().__init__(parent)
@@ -108,21 +108,23 @@ class LoginPage(QWidget):
             "color: rgba(255,253,246,0.55); font-size: 10px; letter-spacing: 1.6px;"
         )
         aside_layout.addWidget(eyebrow)
-        hero = QLabel("The day is yours.")
+        hero = QLabel(i18n.tr("The day is yours."))
         hero.setStyleSheet(
             f"font-family: '{theme.DISPLAY}'; font-size: 53px; color: #fffdf6;"
             " letter-spacing: -1.6px;"
         )
         aside_layout.addWidget(hero)
-        hero2 = QLabel("Pick up a thread.")
+        hero2 = QLabel(i18n.tr("Pick up a thread."))
         hero2.setStyleSheet(
             f"font-family: '{theme.DISPLAY}'; font-size: 53px; color: #e7a082;"
             " font-style: italic; letter-spacing: -1.6px;"
         )
         aside_layout.addWidget(hero2)
         copy = QLabel(
-            "Your tasks, deadlines and calendar live on this computer.\n"
-            "No internet, no cloud, no server."
+            i18n.tr(
+                "Your tasks, deadlines and calendar live on this computer.\n"
+                "No internet, no cloud, no server."
+            )
         )
         copy.setWordWrap(True)
         copy.setStyleSheet(
@@ -152,9 +154,9 @@ class LoginPage(QWidget):
             row.addWidget(ico)
             text = QVBoxLayout()
             text.setSpacing(0)
-            t = QLabel(title)
+            t = QLabel(i18n.tr(title))
             t.setStyleSheet("color: rgba(255,253,246,0.85); font-size: 12px; font-weight: 600;")
-            d = QLabel(detail)
+            d = QLabel(i18n.tr(detail))
             d.setStyleSheet("color: rgba(255,253,246,0.38); font-size: 11px;")
             text.addWidget(t)
             text.addWidget(d)
@@ -162,7 +164,7 @@ class LoginPage(QWidget):
             f_layout.addLayout(row)
         aside_layout.addWidget(feature_card)
         aside_layout.addStretch(2)
-        foot = QLabel("Quiet by design. Built for the work that matters.")
+        foot = QLabel(i18n.tr("Quiet by design. Built for the work that matters."))
         foot.setStyleSheet(
             f"font-family: '{theme.DISPLAY}'; font-style: italic;"
             " color: rgba(255,253,246,0.28); font-size: 11px;"
@@ -182,21 +184,29 @@ class LoginPage(QWidget):
         card_layout = QVBoxLayout(login_card)
         card_layout.setContentsMargins(34, 32, 34, 28)
         card_layout.setSpacing(0)
-        card_layout.addWidget(label("ACCOUNT ACCESS", "Eyebrow"))
-        title = QLabel("Log in.")
+        access_row = QHBoxLayout()
+        access_row.addWidget(label("ACCOUNT ACCESS", "Eyebrow"))
+        access_row.addStretch(1)
+        self.language_button = button(i18n.switch_label(), "TextButton")
+        self.language_button.setToolTip("Switch language / تغيير اللغة")
+        self.language_button.clicked.connect(self.language_requested.emit)
+        access_row.addWidget(self.language_button)
+        card_layout.addLayout(access_row)
+        title = QLabel(i18n.tr("Log in."))
         title.setStyleSheet(
             f"font-family: '{theme.DISPLAY}'; font-size: 48px; color: {theme.INK};"
             " letter-spacing: -1.5px; margin-top: 4px;"
         )
         card_layout.addWidget(title)
-        sub = QLabel("Open your local workspace. Everything stays on this PC.")
+        sub = QLabel(i18n.tr("Open your local workspace. Everything stays on this PC."))
         sub.setWordWrap(True)
         sub.setStyleSheet(f"color: {theme.MUTED}; font-size: 12px; margin-bottom: 16px;")
         card_layout.addWidget(sub)
 
         card_layout.addWidget(self._field_label("Username"))
         self.username = QLineEdit()
-        self.username.setPlaceholderText("your_username")
+        self.username.setPlaceholderText(i18n.tr("your_username"))
+        self.username.setLayoutDirection(Qt.LeftToRight)
         self.username.setMinimumHeight(46)
         card_layout.addWidget(self.username)
         card_layout.addSpacing(10)
@@ -204,8 +214,9 @@ class LoginPage(QWidget):
         password_row = QHBoxLayout()
         password_row.setSpacing(6)
         self.password = QLineEdit()
-        self.password.setPlaceholderText("Your password")
+        self.password.setPlaceholderText(i18n.tr("Your password"))
         self.password.setEchoMode(QLineEdit.Password)
+        self.password.setLayoutDirection(Qt.LeftToRight)
         self.password.setMinimumHeight(46)
         self.password.returnPressed.connect(self._submit)
         password_row.addWidget(self.password, 1)
@@ -213,7 +224,7 @@ class LoginPage(QWidget):
         self.show_password.setCheckable(True)
         self.show_password.setFixedWidth(68)
         self.show_password.setMinimumHeight(46)
-        self.show_password.setToolTip("Show or hide the password")
+        self.show_password.setToolTip(i18n.tr("Show or hide the password"))
         self.show_password.toggled.connect(self._toggle_password)
         password_row.addWidget(self.show_password)
         card_layout.addLayout(password_row)
@@ -241,7 +252,7 @@ class LoginPage(QWidget):
         create_row.addStretch(1)
         card_layout.addLayout(create_row)
         card_layout.addSpacing(14)
-        offline = QLabel("●  OFFLINE  ·  NO SERVER  ·  NO INTERNET")
+        offline = QLabel(i18n.tr("●  OFFLINE  ·  NO SERVER  ·  NO INTERNET"))
         offline.setAlignment(Qt.AlignCenter)
         offline.setStyleSheet(
             f"color: {theme.MUTED_LIGHT}; font-size: 8px; letter-spacing: 0.7px;"
@@ -256,7 +267,7 @@ class LoginPage(QWidget):
 
     @staticmethod
     def _field_label(text: str) -> QLabel:
-        item = QLabel(text)
+        item = QLabel(i18n.tr(text))
         item.setStyleSheet(
             f"color: {theme.INK_SOFT}; font-size: 11px; font-weight: 700;"
         )
@@ -267,12 +278,12 @@ class LoginPage(QWidget):
         self.password.clear()
         self.show_password.setChecked(False)
         self.password.setEchoMode(QLineEdit.Password)
-        self.show_password.setText("Show")
+        self.show_password.setText(i18n.tr("Show"))
         self.username.setFocus()
 
     def _toggle_password(self, shown: bool) -> None:
         self.password.setEchoMode(QLineEdit.Normal if shown else QLineEdit.Password)
-        self.show_password.setText("Hide" if shown else "Show")
+        self.show_password.setText(i18n.tr("Hide") if shown else i18n.tr("Show"))
 
     def _submit(self) -> None:
         self.error.hide()
@@ -281,7 +292,7 @@ class LoginPage(QWidget):
                 self.username.text(), self.password.text()
             )
         except Exception as exc:
-            self.error.setText(str(exc))
+            self.error.setText(i18n.error_text(str(exc)))
             self.error.show()
             return
         self.password.clear()
@@ -352,6 +363,7 @@ class WorkspacePage(QWidget):
         self.calendar.setGridVisible(False)
         self.calendar.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
         self.calendar.setHorizontalHeaderFormat(QCalendarWidget.ShortDayNames)
+        self.calendar.setLocale(i18n.qt_locale())
         self.calendar.setFirstDayOfWeek(Qt.Sunday)
         self.calendar.setMinimumHeight(260)
         self.calendar.setMaximumHeight(300)
@@ -394,7 +406,7 @@ class WorkspacePage(QWidget):
 
         main = QVBoxLayout()
         main.setSpacing(12)
-        date = datetime.now().strftime("%A, %B %d, %Y").upper()
+        date = i18n.format_date(datetime.now()).upper()
         self.date_label = label(date, "EyebrowClay")
         main.addWidget(self.date_label)
         greeting_row = QHBoxLayout()
@@ -407,12 +419,16 @@ class WorkspacePage(QWidget):
         )
         greeting.addWidget(self.heading)
         self.lede = QLabel(
-            "Here’s the shape of your day. Keep it light, or give something a deadline."
+            i18n.tr(
+                "Here’s the shape of your day. Keep it light, or give something a deadline."
+            )
         )
         self.lede.setStyleSheet(f"color: {theme.MUTED}; font-size: 12px;")
         greeting.addWidget(self.lede)
         greeting_row.addLayout(greeting, 1)
-        self.new_button = button("+  New task", "PrimaryButton")
+        self.new_button = button(
+            f"+  {i18n.tr('New task')}", "PrimaryButton", translate=False
+        )
         self.new_button.setMinimumHeight(41)
         self.new_button.clicked.connect(self.new_task)
         greeting_row.addWidget(self.new_button, 0, Qt.AlignBottom)
@@ -447,12 +463,19 @@ class WorkspacePage(QWidget):
         head.addStretch(1)
         self.search = QLineEdit()
         self.search.setObjectName("SearchField")
-        self.search.setPlaceholderText("⌕  Search tasks")
+        self.search.setPlaceholderText(f"⌕  {i18n.tr('Search tasks')}")
         self.search.setFixedWidth(190)
         self.search.textChanged.connect(self._render_tasks)
         head.addWidget(self.search)
         self.sort = QComboBox()
-        self.sort.addItems(["Smart order", "By deadline", "By priority", "Newest first"])
+        self.sort.addItems(
+            [
+                i18n.tr("Smart order"),
+                i18n.tr("By deadline"),
+                i18n.tr("By priority"),
+                i18n.tr("Newest first"),
+            ]
+        )
         self.sort.setFixedWidth(130)
         self.sort.currentIndexChanged.connect(self._render_tasks)
         head.addWidget(self.sort)
@@ -516,7 +539,9 @@ class WorkspacePage(QWidget):
         user = snapshot["user"]
         hour = datetime.now().hour
         greeting = "Good morning" if hour < 12 else "Good afternoon" if hour < 18 else "Good evening"
-        self.heading.setText(f"{greeting}, {user['first_name']}.")
+        self.heading.setText(
+            i18n.tr(f"{greeting}, {{name}}.").format(name=user["first_name"])
+        )
         self._render_all()
 
     def _select_today(self, initial: bool = False) -> None:
@@ -529,7 +554,11 @@ class WorkspacePage(QWidget):
         else:
             self.date_filter = today
             self.clear_date_button.show()
-            self.active_date.setText(f"Showing  {today.toString('dddd, MMM d')}")
+            self.active_date.setText(
+                i18n.tr("Showing  {date}").format(
+                    date=i18n.format_date(today.toPython(), "dddd, d MMMM")
+                )
+            )
             self.active_date.show()
         self._render_tasks()
 
@@ -545,7 +574,11 @@ class WorkspacePage(QWidget):
         selected = self.calendar.selectedDate()
         self.date_filter = selected
         self.clear_date_button.show()
-        self.active_date.setText(f"Showing  {selected.toString('dddd, MMM d')}")
+        self.active_date.setText(
+            i18n.tr("Showing  {date}").format(
+                date=i18n.format_date(selected.toPython(), "dddd, d MMMM")
+            )
+        )
         self.active_date.show()
         self._render_tasks()
 
@@ -581,20 +614,30 @@ class WorkspacePage(QWidget):
         pct = round(complete / len(tasks) * 100) if tasks else 0
         self.ring.set_value(pct)
         if not tasks:
-            self.progress_title.setText("A fresh start")
-            self.progress_detail.setText("Add a task to begin.")
+            self.progress_title.setText(i18n.tr("A fresh start"))
+            self.progress_detail.setText(i18n.tr("Add a task to begin."))
         elif pct == 100:
-            self.progress_title.setText("Everything, done.")
-            self.progress_detail.setText("A clean sweep. Make some room.")
+            self.progress_title.setText(i18n.tr("Everything, done."))
+            self.progress_detail.setText(i18n.tr("A clean sweep. Make some room."))
         elif pct >= 60:
-            self.progress_title.setText("Well under way")
-            self.progress_detail.setText(f"{complete} of {len(tasks)} tasks complete.")
+            self.progress_title.setText(i18n.tr("Well under way"))
+            self.progress_detail.setText(
+                i18n.tr("{complete} of {total} tasks complete.").format(
+                    complete=complete, total=len(tasks)
+                )
+            )
         elif pct:
-            self.progress_title.setText("Finding a rhythm")
-            self.progress_detail.setText(f"{complete} of {len(tasks)} tasks complete.")
+            self.progress_title.setText(i18n.tr("Finding a rhythm"))
+            self.progress_detail.setText(
+                i18n.tr("{complete} of {total} tasks complete.").format(
+                    complete=complete, total=len(tasks)
+                )
+            )
         else:
-            self.progress_title.setText("Ready when you are")
-            self.progress_detail.setText(f"{len(tasks)} tasks waiting.")
+            self.progress_title.setText(i18n.tr("Ready when you are"))
+            self.progress_detail.setText(
+                i18n.tr("{n} tasks waiting.").format(n=len(tasks))
+            )
 
     def _render_calendar_marks(self) -> None:
         for date in self._marked_dates:
@@ -684,16 +727,24 @@ class WorkspacePage(QWidget):
             icon.setAlignment(Qt.AlignCenter)
             icon.setStyleSheet(f"color: {theme.CLAY}; font-size: 28px;")
             box.addWidget(icon)
-            head = QLabel("A clear page." if not all_tasks else "Nothing matches that view.")
+            head = QLabel(
+                i18n.tr(
+                    "A clear page."
+                    if not all_tasks
+                    else "Nothing matches that view."
+                )
+            )
             head.setAlignment(Qt.AlignCenter)
             head.setStyleSheet(
                 f"font-family: '{theme.DISPLAY}'; font-size: 26px; color: {theme.INK};"
             )
             box.addWidget(head)
             text = QLabel(
-                "Add the first thing you want to make room for. A deadline is optional."
-                if not all_tasks
-                else "Try a different filter or date."
+                i18n.tr(
+                    "Add the first thing you want to make room for. A deadline is optional."
+                    if not all_tasks
+                    else "Try a different filter or date."
+                )
             )
             text.setAlignment(Qt.AlignCenter)
             text.setWordWrap(True)
@@ -707,9 +758,9 @@ class WorkspacePage(QWidget):
         self.task_layout.addStretch(1)
         self.count_label.setText(str(len(visible)))
         self.summary.setText(
-            f"{len(visible)} of {len(all_tasks)} shown"
+            i18n.tr("{n} of {m} shown").format(n=len(visible), m=len(all_tasks))
             if visible != all_tasks
-            else f"{len(all_tasks)} tasks"
+            else i18n.tr("{n} tasks").format(n=len(all_tasks))
         )
 
     def _show_composer(self) -> None:
@@ -736,35 +787,32 @@ class WorkspacePage(QWidget):
                 self.snapshot = self.service.create_task(payload)
                 message = "Task added."
         except Exception as exc:
-            self.composer.show_error(str(exc))
+            self.composer.show_error(i18n.error_text(str(exc)))
             return
         self.composer.hide()
         self._render_all()
-        self.notify(message)
+        self.notify(i18n.tr(message))
 
     def _toggle_task(self, task_id: int) -> None:
         try:
             self.snapshot = self.service.toggle_task(task_id)
             self._render_all()
         except Exception as exc:
-            QMessageBox.warning(self, "YONJIZ", str(exc))
+            i18n.warn(self, "YONJIZ", i18n.error_text(str(exc)))
 
     def _delete_task(self, task: dict) -> None:
-        answer = QMessageBox.question(
+        if not i18n.confirm(
             self,
             "Delete task",
-            f'Delete “{task["title"]}”? This cannot be undone.',
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
-        )
-        if answer != QMessageBox.Yes:
+            i18n.tr("Delete “{title}”? This cannot be undone.").format(title=task["title"]),
+        ):
             return
         try:
             self.snapshot = self.service.delete_task(task["id"])
             self._render_all()
-            self.notify("Task deleted.")
+            self.notify(i18n.tr("Task deleted."))
         except Exception as exc:
-            QMessageBox.warning(self, "YONJIZ", str(exc))
+            i18n.warn(self, "YONJIZ", i18n.error_text(str(exc)))
 
 
 def color_muted(colour: str) -> str:
@@ -810,7 +858,7 @@ class AdminPage(QWidget):
 
         eyebrow = label("CONTROL ROOM", "Eyebrow")
         layout.addWidget(eyebrow)
-        heading = QLabel("The people and<br><i>the work.</i>")
+        heading = QLabel(i18n.tr("The people and<br><i>the work.</i>"))
         heading.setTextFormat(Qt.RichText)
         heading.setStyleSheet(
             f"font-family: '{theme.DISPLAY}'; font-size: 54px; color: {theme.INK};"
@@ -818,7 +866,9 @@ class AdminPage(QWidget):
         )
         layout.addWidget(heading)
         self.lede = QLabel(
-            "A compact view of every account and task. Three seats, one protected main admin."
+            i18n.tr(
+                "A compact view of every account and task. Three seats, one protected main admin."
+            )
         )
         self.lede.setStyleSheet(f"color: {theme.MUTED}; font-size: 12px;")
         layout.addWidget(self.lede)
@@ -845,7 +895,7 @@ class AdminPage(QWidget):
         up_head.addStretch(1)
         self.user_search = QLineEdit()
         self.user_search.setObjectName("SearchField")
-        self.user_search.setPlaceholderText("⌕  Find a person")
+        self.user_search.setPlaceholderText(f"⌕  {i18n.tr('Find a person')}")
         self.user_search.setFixedWidth(190)
         self.user_search.textChanged.connect(self._filter_users)
         up_head.addWidget(self.user_search)
@@ -853,7 +903,14 @@ class AdminPage(QWidget):
 
         self.table = QTableWidget(0, 6)
         self.table.setHorizontalHeaderLabels(
-            ["PERSON", "ACCESS", "STATUS", "TASKS", "JOINED", "ACTIONS"]
+            [
+                i18n.tr("PERSON"),
+                i18n.tr("ACCESS"),
+                i18n.tr("STATUS"),
+                i18n.tr("TASKS"),
+                i18n.tr("JOINED"),
+                i18n.tr("ACTIONS"),
+            ]
         )
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
@@ -868,7 +925,9 @@ class AdminPage(QWidget):
         self.table.setMaximumHeight(290)
         up_layout.addWidget(self.table)
         foot = QLabel(
-            "The main admin is permanently protected. Other admins can hire or demote admins, but never the main admin."
+            i18n.tr(
+                "The main admin is permanently protected. Other admins can hire or demote admins, but never the main admin."
+            )
         )
         foot.setWordWrap(True)
         foot.setStyleSheet(
@@ -912,14 +971,16 @@ class AdminPage(QWidget):
         shield = QLabel("◈")
         shield.setStyleSheet(f"color: {theme.CLAY}; font-size: 22px;")
         sp.addWidget(shield)
-        why = QLabel("Why three?")
+        why = QLabel(i18n.tr("Why three?"))
         why.setStyleSheet(
             f"font-family: '{theme.DISPLAY}'; font-size: 24px; color: #fffdf6;"
         )
         sp.addWidget(why)
         why_text = QLabel(
-            "Seat 1 is reserved for the protected main admin. Seats 2 and 3 can be "
-            "hired and released — never the main account."
+            i18n.tr(
+                "Seat 1 is reserved for the protected main admin. Seats 2 and 3 can be "
+                "hired and released — never the main account."
+            )
         )
         why_text.setWordWrap(True)
         why_text.setStyleSheet("color: rgba(255,253,246,0.55); font-size: 11px;")
@@ -967,18 +1028,22 @@ class AdminPage(QWidget):
             self.table.setRowHeight(row, 62)
             self.table.setItem(row, 0, QTableWidgetItem(""))
             self.table.setCellWidget(row, 0, self._person_widget(person))
-            access = QLabel(
-                "MAIN ADMIN · 1" if person["is_primary_admin"]
-                else f"ADMIN · {person['admin_slot']}" if person["role"] == "admin"
-                else "USER"
-            )
+            if person["is_primary_admin"]:
+                access_text = i18n.tr("MAIN ADMIN · {n}").format(n=1)
+            elif person["role"] == "admin":
+                access_text = i18n.tr("ADMIN · {n}").format(n=person["admin_slot"])
+            else:
+                access_text = i18n.tr("USER")
+            access = QLabel(access_text)
             access.setObjectName("RoleBadge")
             access.setProperty(
                 "role", "primary" if person["is_primary_admin"] else "admin" if person["role"] == "admin" else "user"
             )
             access.setAlignment(Qt.AlignCenter)
             self.table.setCellWidget(row, 1, self._center(access))
-            status = QLabel("●  Active" if person["is_active"] else "●  Inactive")
+            status = QLabel(
+                i18n.tr("●  Active") if person["is_active"] else i18n.tr("●  Inactive")
+            )
             status.setStyleSheet(
                 f"color: {theme.SUCCESS if person['is_active'] else theme.MUTED_LIGHT};"
                 " font-size: 11px;"
@@ -987,7 +1052,7 @@ class AdminPage(QWidget):
             tasks = QLabel(f"{person['completed_count']}/{person['task_count']}")
             tasks.setStyleSheet(f"color: {theme.INK_SOFT}; font-size: 11px; font-weight: 600;")
             self.table.setCellWidget(row, 3, self._center(tasks))
-            joined = QLabel((person.get("created_at") or "")[:10])
+            joined = QLabel(i18n.format_short_date(person.get("created_at") or ""))
             joined.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
             self.table.setCellWidget(row, 4, self._center(joined))
             self.table.setCellWidget(row, 5, self._actions_widget(person))
@@ -1018,7 +1083,7 @@ class AdminPage(QWidget):
         copy.setSpacing(0)
         name = QLabel(
             person["full_name"]
-            + ("  YOU" if person["id"] == self.current_user_id else "")
+            + (i18n.tr("  YOU") if person["id"] == self.current_user_id else "")
         )
         name.setStyleSheet(f"font-size: 11px; font-weight: 700; color: {theme.INK};")
         copy.addWidget(name)
@@ -1034,7 +1099,7 @@ class AdminPage(QWidget):
         layout.setContentsMargins(3, 2, 3, 2)
         layout.setSpacing(3)
         if person["is_primary_admin"]:
-            lock = QLabel("◈  Untouchable")
+            lock = QLabel(f"◈  {i18n.tr('Untouchable')}")
             lock.setObjectName("ProtectedLabel")
             layout.addWidget(lock)
         elif person["id"] == self.current_user_id:
@@ -1055,7 +1120,7 @@ class AdminPage(QWidget):
                 demote.clicked.connect(lambda _, uid=person["id"]: self._role(uid, "demote"))
                 layout.addWidget(demote)
             delete = button("×", "TableDanger")
-            delete.setToolTip("Delete account")
+            delete.setToolTip(i18n.tr("Delete account"))
             delete.clicked.connect(lambda _, uid=person["id"], name=person["username"]: self._delete_user(uid, name))
             layout.addWidget(delete)
         layout.addStretch(1)
@@ -1086,7 +1151,16 @@ class AdminPage(QWidget):
             title = QLabel(task["title"])
             title.setStyleSheet(f"font-size: 11px; font-weight: 600; color: {theme.INK};")
             text.addWidget(title)
-            meta = QLabel(f"@{task['owner']}  ·  {'Done' if task['complete'] else 'No deadline' if not task.get('deadline') else task['deadline'][:10]}")
+            meta = QLabel(
+                f"@{task['owner']}  ·  "
+                + (
+                    i18n.tr("Done")
+                    if task["complete"]
+                    else i18n.tr("No deadline")
+                    if not task.get("deadline")
+                    else task["deadline"][:10]
+                )
+            )
             meta.setStyleSheet(f"color: {theme.MUTED}; font-size: 10px;")
             text.addWidget(meta)
             layout.addLayout(text, 1)
@@ -1114,7 +1188,7 @@ class AdminPage(QWidget):
             layout = QVBoxLayout(item)
             layout.setContentsMargins(0, 3, 0, 3)
             layout.setSpacing(0)
-            action = QLabel(labels.get(entry["action"], entry["action"]))
+            action = QLabel(i18n.tr(labels.get(entry["action"], entry["action"])))
             action.setStyleSheet(f"font-size: 11px; font-weight: 700; color: {theme.INK};")
             layout.addWidget(action)
             if entry.get("target_label"):
@@ -1136,39 +1210,38 @@ class AdminPage(QWidget):
         try:
             self.data = self.service.change_role(user_id, action)
             self.refresh(self.data)
-            self.notify("Admin role updated.")
+            self.notify(i18n.tr("Admin role updated."))
         except Exception as exc:
-            QMessageBox.warning(self, "YONJIZ", str(exc))
+            i18n.warn(self, "YONJIZ", i18n.error_text(str(exc)))
 
     def _status(self, user_id: int, active: bool) -> None:
         try:
             self.data = self.service.change_status(user_id, active)
             self.refresh(self.data)
-            self.notify("Account updated.")
+            self.notify(i18n.tr("Account updated."))
         except Exception as exc:
-            QMessageBox.warning(self, "YONJIZ", str(exc))
+            i18n.warn(self, "YONJIZ", i18n.error_text(str(exc)))
 
     def _delete_user(self, user_id: int, username: str) -> None:
-        answer = QMessageBox.question(
+        if not i18n.confirm(
             self,
             "Delete account",
-            f"Permanently delete @{username} and all of their tasks?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
-        )
-        if answer != QMessageBox.Yes:
+            i18n.tr("Permanently delete @{username} and all of their tasks?").format(
+                username=username
+            ),
+        ):
             return
         try:
             self.data = self.service.delete_user(user_id)
             self.refresh(self.data)
-            self.notify("Account deleted.")
+            self.notify(i18n.tr("Account deleted."))
         except Exception as exc:
-            QMessageBox.warning(self, "YONJIZ", str(exc))
+            i18n.warn(self, "YONJIZ", i18n.error_text(str(exc)))
 
     def _delete_todo(self, todo_id: int) -> None:
         try:
             self.data = self.service.delete_admin_todo(todo_id)
             self.refresh(self.data)
-            self.notify("Task deleted.")
+            self.notify(i18n.tr("Task deleted."))
         except Exception as exc:
-            QMessageBox.warning(self, "YONJIZ", str(exc))
+            i18n.warn(self, "YONJIZ", i18n.error_text(str(exc)))

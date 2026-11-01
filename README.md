@@ -49,6 +49,8 @@ The desktop edition is a **native Qt application**, not a browser wrapper:
   calls the internet.
 - Larger, high-DPI-friendly typography and a **Show / Hide password** control on
   both login and local account creation.
+- **English / العربية** language switch on both the login page and the workspace
+  top bar, with RTL layout, localized dates and a saved preference.
 - Keyboard shortcuts: `Ctrl+N` new task, `Ctrl+K` search, `Ctrl+1` workspace,
   `Ctrl+2` admin console, `Ctrl+L` log out.
 - Minimum window size is 1160×780; it opens at 1440×940.
@@ -61,6 +63,10 @@ existing `hussein_alomar` main admin plus `hussein_1`.
 | ![Desktop login](docs/screenshots/desktop-login.png) | ![Password shown](docs/screenshots/desktop-login-password.png) |
 
 ![Inline task composer with spelling correction](docs/screenshots/desktop-inline-composer.png)
+
+| English | العربية |
+| --- | --- |
+| ![English workspace](docs/screenshots/desktop-workspace.png) | ![Arabic workspace](docs/screenshots/desktop-workspace-ar.png) |
 
 ### Rebuild the desktop app
 
@@ -227,6 +233,7 @@ desktop/service.py       direct SQLite task/admin service
 desktop/pages.py         login, workspace and admin pages
 desktop/widgets.py       clock, task cards, inline composer, dialogs
 desktop/spellcheck.py    offline bundled English spelling corrector
+desktop/i18n.py          English/Arabic translations and locale helpers
 desktop/assets/          app icon and brand mark
 build_desktop.ps1        package/install/create Desktop shortcut
 YONJIZ.spec              PyInstaller build definition

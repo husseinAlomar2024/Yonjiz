@@ -33,6 +33,9 @@ dist/
 seed/*.db
 desktop-error.log
 
+# Local UI preference
+settings.json
+
 # Android build output
 mobile/.gradle/
 mobile/build/

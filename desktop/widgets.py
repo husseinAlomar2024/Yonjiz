@@ -35,7 +35,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from desktop import theme
+from desktop import i18n, theme
 from desktop.paths import brand_mark_path, icon_path
 from desktop.spellcheck import correct_text
 
@@ -46,24 +46,36 @@ def repolish(widget: QWidget) -> None:
     widget.update()
 
 
-def label(text: str = "", name: str = "", parent: Optional[QWidget] = None) -> QLabel:
-    item = QLabel(text, parent)
+def label(
+    text: str = "",
+    name: str = "",
+    parent: Optional[QWidget] = None,
+    translate: bool = True,
+) -> QLabel:
+    item = QLabel(i18n.tr(text) if translate else text, parent)
     if name:
         item.setObjectName(name)
     item.setWordWrap(False)
     return item
 
 
-def button(text: str, name: str = "GhostButton", parent: Optional[QWidget] = None) -> QPushButton:
-    item = QPushButton(text, parent)
+def button(
+    text: str,
+    name: str = "GhostButton",
+    parent: Optional[QWidget] = None,
+    translate: bool = True,
+) -> QPushButton:
+    item = QPushButton(i18n.tr(text) if translate else text, parent)
     item.setObjectName(name)
     item.setCursor(Qt.PointingHandCursor)
     return item
 
 
 def priority_name(value: int) -> str:
-    return {1: "VERY LOW", 2: "LOW", 3: "MEDIUM", 4: "HIGH", 5: "CRITICAL"}.get(
-        value, "MEDIUM"
+    return i18n.tr(
+        {1: "VERY LOW", 2: "LOW", 3: "MEDIUM", 4: "HIGH", 5: "CRITICAL"}.get(
+            value, "MEDIUM"
+        )
     )
 
 
@@ -237,9 +249,9 @@ class ClockCard(QFrame):
 
         try:
             zone = datetime.now().astimezone().tzinfo
-            self.zone.setText(str(zone))
+            self.zone.setText(i18n.tr(str(zone)))
         except Exception:
-            self.zone.setText("Local time")
+            self.zone.setText(i18n.tr("Local time"))
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._tick)
@@ -248,8 +260,9 @@ class ClockCard(QFrame):
 
     def _tick(self) -> None:
         now = datetime.now()
-        self.time.setText(now.strftime("%I:%M").lstrip("0") + f"  {now.strftime('%p')}")
-        self.date.setText(now.strftime("%A, %B %d, %Y"))
+        time_text = i18n.qt_locale().toString(QDateTime(now), "h:mm AP")
+        self.time.setText(time_text)
+        self.date.setText(i18n.format_date(now))
         self.analog.tick(now)
 
 
@@ -317,7 +330,9 @@ class TaskCard(QFrame):
         self.check.setFixedSize(21, 21)
         self.check.setCursor(Qt.PointingHandCursor)
         self.check.setProperty("checked", task["complete"])
-        self.check.setToolTip("Mark as not done" if task["complete"] else "Mark as done")
+        self.check.setToolTip(
+            i18n.tr("Mark as not done") if task["complete"] else i18n.tr("Mark as done")
+        )
         self.check.clicked.connect(lambda: self.toggled.emit(task["id"]))
         layout.addWidget(self.check, 0, Qt.AlignTop)
 
@@ -327,7 +342,7 @@ class TaskCard(QFrame):
 
         title_row = QHBoxLayout()
         title_row.setSpacing(7)
-        title = label(task["title"], "TaskTitle")
+        title = label(task["title"], "TaskTitle", translate=False)
         title.setWordWrap(True)
         title.setProperty("complete", task["complete"])
         title_row.addWidget(title, 1)
@@ -337,7 +352,7 @@ class TaskCard(QFrame):
         body.addLayout(title_row)
 
         if task.get("description"):
-            desc = label(task["description"], "TaskDescription")
+            desc = label(task["description"], "TaskDescription", translate=False)
             desc.setWordWrap(True)
             desc.setMaximumHeight(30)
             body.addWidget(desc)
@@ -369,12 +384,12 @@ class TaskCard(QFrame):
         actions.setSpacing(2)
         edit = button("Edit", "TableAction")
         edit.setFixedSize(58, 27)
-        edit.setToolTip("Edit task")
+        edit.setToolTip(i18n.tr("Edit task"))
         edit.clicked.connect(lambda: self.edit_requested.emit(task))
         actions.addWidget(edit)
         delete = button("Delete", "TableDangerText")
         delete.setFixedSize(58, 27)
-        delete.setToolTip("Delete task")
+        delete.setToolTip(i18n.tr("Delete task"))
         delete.clicked.connect(lambda: self.delete_requested.emit(task))
         actions.addWidget(delete)
         action_widget = QWidget()
@@ -390,13 +405,13 @@ class TaskCard(QFrame):
         except ValueError:
             return None
         now = datetime.now(dt.tzinfo)
-        time_text = dt.strftime("%I:%M %p").lstrip("0")
+        time_text = i18n.qt_locale().toString(QDateTime(dt), "h:mm AP")
         if dt.date() == now.date():
-            text = f"Today, {time_text}"
+            text = i18n.tr("Today, {time}").format(time=time_text)
         elif dt.date() == (now + timedelta(days=1)).date():
-            text = f"Tomorrow, {time_text}"
+            text = i18n.tr("Tomorrow, {time}").format(time=time_text)
         else:
-            text = dt.strftime("%b %d, %I:%M %p").replace(" 0", " ")
+            text = i18n.format_deadline(dt)
         if task["complete"]:
             state = "done"
         elif dt < now:
@@ -425,7 +440,7 @@ class SeatCard(QFrame):
         layout.setSpacing(4)
 
         top = QHBoxLayout()
-        num = label(f"Seat {seat['slot']:02d}")
+        num = label(i18n.tr("Seat {n}").format(n=f"{seat['slot']:02d}"))
         num.setStyleSheet(
             f"font-family: '{theme.DISPLAY}'; font-style: italic; font-size: 12px;"
             f" color: {theme.CLAY if primary else theme.MUTED_LIGHT};"
@@ -459,10 +474,10 @@ class SeatCard(QFrame):
             detail.addWidget(avatar)
             copy = QVBoxLayout()
             copy.setSpacing(0)
-            name = label(user["full_name"])
+            name = label(user["full_name"], translate=False)
             name.setStyleSheet(f"font-size: 13px; font-weight: 700; color: {theme.INK};")
             copy.addWidget(name)
-            username = label(f"@{user['username']}")
+            username = label(f"@{user['username']}", translate=False)
             username.setStyleSheet(f"color: {theme.MUTED}; font-size: 11px;")
             copy.addWidget(username)
             detail.addLayout(copy)
@@ -471,15 +486,17 @@ class SeatCard(QFrame):
             layout.addStretch(1)
             foot = QHBoxLayout()
             since = label(
-                "Protected main account"
+                i18n.tr("Protected main account")
                 if user["is_primary_admin"]
-                else f"Since {(user.get('created_at') or '')[:7]}"
+                else i18n.tr("Since {date}").format(
+                    date=i18n.format_month(user.get("created_at") or "")
+                )
             )
             since.setStyleSheet(f"color: {theme.MUTED_LIGHT}; font-size: 10px;")
             foot.addWidget(since)
             foot.addStretch(1)
             if user["is_primary_admin"]:
-                protected = label("🔒 PROTECTED")
+                protected = label(f"🔒 {i18n.tr('PROTECTED')}")
                 protected.setStyleSheet(
                     f"color: #9b3f21; background: {theme.CLAY_SOFT}; border-radius: 8px;"
                     " padding: 2px 7px; font-size: 8px; font-weight: 700;"
@@ -501,7 +518,7 @@ class SeatCard(QFrame):
             hint.setStyleSheet(f"color: {theme.MUTED}; font-size: 11px;")
             layout.addWidget(hint)
             layout.addStretch(1)
-            slot = label(f"SLOT {seat['slot']}")
+            slot = label(i18n.tr("SLOT {n}").format(n=seat["slot"]))
             slot.setStyleSheet(f"color: {theme.MUTED_LIGHT}; font-size: 10px;")
             layout.addWidget(slot, 0, Qt.AlignRight)
 
@@ -527,14 +544,14 @@ class TaskComposer(QFrame):
         head.addStretch(1)
         close = button("×", "CircleButton")
         close.setFixedSize(28, 28)
-        close.setToolTip("Close without saving")
+        close.setToolTip(i18n.tr("Close without saving"))
         close.clicked.connect(self.cancelled.emit)
         head.addWidget(close)
         layout.addLayout(head)
 
         layout.addWidget(self._field_label("Task title"))
         self.title_edit = QLineEdit()
-        self.title_edit.setPlaceholderText("What needs doing?")
+        self.title_edit.setPlaceholderText(i18n.tr("What needs doing?"))
         self.title_edit.setMaxLength(120)
         self.title_edit.returnPressed.connect(self._submit)
         layout.addWidget(self.title_edit)
@@ -548,7 +565,7 @@ class TaskComposer(QFrame):
         for value, name in [
             (1, "Very low"), (2, "Low"), (3, "Medium"), (4, "High"), (5, "Critical")
         ]:
-            self.priority.addItem(name, value)
+            self.priority.addItem(i18n.tr(name), value)
         self.priority.setCurrentIndex(2)
         priority_col.addWidget(self.priority)
         details.addLayout(priority_col, 1)
@@ -558,11 +575,13 @@ class TaskComposer(QFrame):
         deadline_head = QHBoxLayout()
         deadline_head.addWidget(self._field_label("Deadline"))
         deadline_head.addStretch(1)
-        self.deadline_toggle = QCheckBox("Set a deadline")
+        self.deadline_toggle = QCheckBox(i18n.tr("Set a deadline"))
         deadline_head.addWidget(self.deadline_toggle)
         deadline_col.addLayout(deadline_head)
         self.deadline = QDateTimeEdit()
         self.deadline.setCalendarPopup(True)
+        self.deadline.setLocale(i18n.qt_locale())
+        self.deadline.setLayoutDirection(Qt.LeftToRight)
         self.deadline.setDisplayFormat("MMM d, yyyy  h:mm AP")
         self.deadline.setMinimumDateTime(QDateTime.currentDateTime().addYears(-2))
         initial = QDateTime.currentDateTime().addDays(1)
@@ -576,7 +595,7 @@ class TaskComposer(QFrame):
 
         layout.addWidget(self._field_label("Notes  ·  optional"))
         self.notes = QTextEdit()
-        self.notes.setPlaceholderText("A little context, if it helps.")
+        self.notes.setPlaceholderText(i18n.tr("A little context, if it helps."))
         self.notes.setFixedHeight(64)
         layout.addWidget(self.notes)
 
@@ -619,7 +638,7 @@ class TaskComposer(QFrame):
 
     @staticmethod
     def _field_label(text: str) -> QLabel:
-        item = QLabel(text)
+        item = QLabel(i18n.tr(text))
         item.setStyleSheet(
             f"color: {theme.INK_SOFT}; font-size: 11px; font-weight: 700;"
         )
@@ -628,8 +647,8 @@ class TaskComposer(QFrame):
     def begin_add(self) -> None:
         self.task = None
         self._undo_spell = None
-        self.heading.setText("NEW TASK")
-        self.save_button.setText("Add task")
+        self.heading.setText(i18n.tr("NEW TASK"))
+        self.save_button.setText(i18n.tr("Add task"))
         self.title_edit.clear()
         self.notes.clear()
         self.priority.setCurrentIndex(2)
@@ -644,8 +663,8 @@ class TaskComposer(QFrame):
     def begin_edit(self, task: dict) -> None:
         self.task = task
         self._undo_spell = None
-        self.heading.setText("EDIT TASK")
-        self.save_button.setText("Save changes")
+        self.heading.setText(i18n.tr("EDIT TASK"))
+        self.save_button.setText(i18n.tr("Save changes"))
         self.title_edit.setText(task.get("title", ""))
         self.notes.setPlainText(task.get("description", ""))
         self.priority.setCurrentIndex(max(0, min(4, int(task.get("priority", 3)) - 1)))
@@ -680,7 +699,7 @@ class TaskComposer(QFrame):
         fixed_notes, note_changes = correct_text(notes)
         changes = title_changes + note_changes
         if not changes:
-            self.spell_status.setText("No obvious spelling issues.")
+            self.spell_status.setText(i18n.tr("No obvious spelling issues."))
             self.undo_spell.hide()
             self._undo_spell = None
             return
@@ -688,8 +707,10 @@ class TaskComposer(QFrame):
         self.title_edit.setText(fixed_title)
         self.notes.setPlainText(fixed_notes)
         preview = "  ·  ".join(f"{old} → {new}" for old, new in changes[:4])
-        more = f"  (+{len(changes) - 4} more)" if len(changes) > 4 else ""
-        self.spell_status.setText(f"Corrected: {preview}{more}")
+        more = f"  (+{len(changes) - 4})" if len(changes) > 4 else ""
+        self.spell_status.setText(
+            i18n.tr("Corrected: {preview}{more}").format(preview=preview, more=more)
+        )
         self.undo_spell.show()
 
     def _undo_spelling(self) -> None:
@@ -699,12 +720,12 @@ class TaskComposer(QFrame):
         self.title_edit.setText(title)
         self.notes.setPlainText(notes)
         self._undo_spell = None
-        self.spell_status.setText("Spelling changes undone.")
+        self.spell_status.setText(i18n.tr("Spelling changes undone."))
         self.undo_spell.hide()
 
     def _submit(self) -> None:
         if not self.title_edit.text().strip():
-            self.show_error("Give this task a title.")
+            self.show_error(i18n.tr("Give this task a title."))
             return
         self.error.hide()
         self.saved.emit(self.payload())
@@ -769,7 +790,7 @@ class TaskDialog(QDialog):
         for value, name in [
             (1, "Very low"), (2, "Low"), (3, "Medium"), (4, "High"), (5, "Critical")
         ]:
-            self.priority.addItem(name, value)
+            self.priority.addItem(i18n.tr(name), value)
         current = int(self.task.get("priority", 3))
         self.priority.setCurrentIndex(max(0, min(4, current - 1)))
         prio_col.addWidget(self.priority)
@@ -780,11 +801,13 @@ class TaskDialog(QDialog):
         deadline_head = QHBoxLayout()
         deadline_head.addWidget(self._field_label("Deadline"))
         deadline_head.addStretch(1)
-        self.deadline_toggle = QCheckBox("Set a deadline")
+        self.deadline_toggle = QCheckBox(i18n.tr("Set a deadline"))
         deadline_head.addWidget(self.deadline_toggle)
         deadline_col.addLayout(deadline_head)
         self.deadline = QDateTimeEdit()
         self.deadline.setCalendarPopup(True)
+        self.deadline.setLocale(i18n.qt_locale())
+        self.deadline.setLayoutDirection(Qt.LeftToRight)
         self.deadline.setDisplayFormat("MMM d, yyyy  h:mm AP")
         self.deadline.setMinimumDateTime(QDateTime.currentDateTime().addYears(-2))
         initial = QDateTime.currentDateTime().addDays(1)
@@ -829,7 +852,7 @@ class TaskDialog(QDialog):
 
     @staticmethod
     def _field_label(text: str) -> QLabel:
-        item = QLabel(text)
+        item = QLabel(i18n.tr(text))
         item.setStyleSheet(
             f"color: {theme.INK_SOFT}; font-size: 11px; font-weight: 700;"
         )
@@ -871,7 +894,7 @@ class RegisterDialog(QDialog):
     def __init__(self, service, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.service = service
-        self.setWindowTitle("Create local account")
+        self.setWindowTitle(i18n.tr("Create local account"))
         self.setModal(True)
         self.setMinimumWidth(480)
         layout = QVBoxLayout(self)
@@ -888,8 +911,10 @@ class RegisterDialog(QDialog):
             ("password", "Password (8+ characters)"),
         ]:
             field = QLineEdit()
-            field.setPlaceholderText(placeholder)
+            field.setPlaceholderText(i18n.tr(placeholder))
             field.setMinimumHeight(42)
+            if attr in ("username", "email", "password"):
+                field.setLayoutDirection(Qt.LeftToRight)
             if attr == "password":
                 field.setEchoMode(QLineEdit.Password)
                 setattr(self, attr, field)
@@ -923,7 +948,9 @@ class RegisterDialog(QDialog):
 
     def _toggle_password(self, shown: bool) -> None:
         self.password.setEchoMode(QLineEdit.Normal if shown else QLineEdit.Password)
-        self.register_show_password.setText("Hide" if shown else "Show")
+        self.register_show_password.setText(
+            i18n.tr("Hide") if shown else i18n.tr("Show")
+        )
 
     def _create(self) -> None:
         try:
@@ -934,7 +961,7 @@ class RegisterDialog(QDialog):
                 self.email.text(),
             )
         except Exception as exc:
-            self.error.setText(str(exc))
+            self.error.setText(i18n.error_text(str(exc)))
             return
         self.registered.emit(snapshot)
         self.accept()
