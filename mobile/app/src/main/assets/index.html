@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#174b3b">
+    <meta name="color-scheme" content="light">
+    <title>YONJIZ · ينجز</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app-shell">
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true">Y<span></span></span>
+            <span class="brand-copy">
+                <span class="brand-name">YONJIZ<span class="brand-dot">.</span></span>
+                <span class="brand-arabic" lang="ar" dir="rtl">ينجز</span>
+            </span>
+        </div>
+        <div class="offline-pill"><span></span> On device</div>
+    </header>
+
+    <main class="views">
+        <section class="view is-active" id="tasksView">
+            <header class="welcome">
+                <p class="eyebrow" id="todayLabel">TODAY</p>
+                <h1><span id="greeting">Good morning.</span></h1>
+                <p class="welcome-copy">A clear space for what matters. Your tasks never leave this phone.</p>
+            </header>
+
+            <section class="clock-hero" aria-label="Current time">
+                <div class="clock-head">
+                    <span class="clock-kicker">LOCAL TIME</span>
+                    <span class="live-pill"><i></i> LIVE</span>
+                </div>
+                <div class="clock-main">
+                    <svg class="clock-face" id="clockFace" viewBox="0 0 100 100" aria-hidden="true">
+                        <circle cx="50" cy="50" r="46" class="clock-ring"></circle>
+                        <g id="clockTicks"></g>
+                        <line id="hourHand" x1="50" y1="50" x2="50" y2="29" class="hour-hand"></line>
+                        <line id="minuteHand" x1="50" y1="50" x2="50" y2="19" class="minute-hand"></line>
+                        <line id="secondHand" x1="50" y1="50" x2="50" y2="16" class="second-hand"></line>
+                        <circle cx="50" cy="50" r="2.8" class="clock-pin"></circle>
+                    </svg>
+                    <div class="digital">
+                        <span id="clockTime">--:--</span>
+                        <span class="digital-side"><span id="clockSeconds">--</span><span id="clockPeriod">--</span></span>
+                    </div>
+                </div>
+                <p class="clock-date" id="clockDate">Loading…</p>
+            </section>
+
+            <section class="stats" aria-label="Task summary">
+                <article class="stat"><span>All</span><strong id="statTotal">0</strong><small>tasks</small></article>
+                <article class="stat"><span>Open</span><strong id="statOpen">0</strong><small>in motion</small></article>
+                <article class="stat"><span>Due today</span><strong id="statToday">0</strong><small>today</small></article>
+                <article class="stat alert"><span>Overdue</span><strong id="statOverdue">0</strong><small>needs care</small></article>
+            </section>
+
+            <section class="panel task-panel">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <h2>Your tasks</h2>
+                        <span class="count-pill" id="taskCount">0</span>
+                    </div>
+                    <button class="icon-btn" id="openAdd" type="button" aria-label="Add task">＋</button>
+                </div>
+
+                <label class="search" for="searchInput">
+                    <span aria-hidden="true">⌕</span>
+                    <input id="searchInput" type="search" placeholder="Search tasks" autocomplete="off">
+                </label>
+
+                <div class="filters" role="group" aria-label="Filter tasks">
+                    <button class="filter is-active" data-filter="all" type="button">All</button>
+                    <button class="filter" data-filter="open" type="button">Open</button>
+                    <button class="filter" data-filter="complete" type="button">Done</button>
+                    <button class="filter" data-filter="overdue" type="button">Overdue</button>
+                </div>
+
+                <div class="date-chip" id="dateChip" hidden>
+                    <span id="dateChipText"></span>
+                    <button id="clearDate" type="button" aria-label="Clear selected date">×</button>
+                </div>
+
+                <div id="taskList" class="task-list"></div>
+                <div id="emptyState" class="empty" hidden>
+                    <span class="empty-icon">✦</span>
+                    <h3 id="emptyTitle">A clear page.</h3>
+                    <p id="emptyCopy">Add the first thing you want to make room for. A deadline is optional.</p>
+                    <button class="secondary-btn" id="emptyAdd" type="button">Add your first task</button>
+                </div>
+            </section>
+            <p class="footnote">YONJIZ · ينجز — offline mobile edition. No account, no server.</p>
+        </section>
+
+        <section class="view" id="calendarView">
+            <header class="view-heading">
+                <p class="eyebrow">DEADLINE CALENDAR</p>
+                <h1>This month.</h1>
+                <p class="welcome-copy">Tap a day to see its tasks. Deadlines are shown in your local time.</p>
+            </header>
+            <section class="panel calendar-panel">
+                <div class="calendar-head">
+                    <button class="month-btn" id="prevMonth" type="button" aria-label="Previous month">‹</button>
+                    <h2 id="monthLabel">Month</h2>
+                    <button class="month-btn" id="nextMonth" type="button" aria-label="Next month">›</button>
+                </div>
+                <div class="weekdays" aria-hidden="true">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+                <div class="calendar-legend">
+                    <span><i class="dot due"></i> Deadline</span>
+                    <span><i class="dot overdue"></i> Overdue</span>
+                    <button class="text-btn" id="todayButton" type="button">Today</button>
+                </div>
+            </section>
+            <section class="panel day-panel">
+                <div class="panel-head">
+                    <div class="panel-title"><h2 id="dayTitle">Selected day</h2><span class="count-pill" id="dayCount">0</span></div>
+                    <button class="text-btn" id="clearDay" type="button">All tasks</button>
+                </div>
+                <div id="dayTaskList" class="task-list"></div>
+            </section>
+        </section>
+
+        <section class="view" id="aboutView">
+            <header class="view-heading">
+                <p class="eyebrow">ON DEVICE</p>
+                <h1>Yours, locally.</h1>
+                <p class="welcome-copy">YONJIZ mobile keeps your tasks in a private file on this phone. It has no internet permission and no server.</p>
+            </header>
+            <section class="panel about-panel">
+                <div class="about-row"><span class="about-icon">◈</span><div><strong>No internet permission</strong><p>The Android manifest deliberately omits the INTERNET permission.</p></div></div>
+                <div class="about-row"><span class="about-icon">▤</span><div><strong>Private local storage</strong><p>Data is written to the app’s private files directory.</p></div></div>
+                <div class="about-row"><span class="about-icon">◷</span><div><strong>Local time</strong><p>Deadlines and the clock use your phone’s timezone.</p></div></div>
+                <div class="about-actions">
+                    <button class="secondary-btn" id="clearCompleted" type="button">Clear completed</button>
+                    <button class="danger-btn" id="wipeData" type="button">Delete all data</button>
+                </div>
+                <p class="version">YONJIZ mobile · v1.0 · <span id="taskWipeCount">0</span> tasks on this device</p>
+            </section>
+        </section>
+    </main>
+
+    <nav class="tabbar" aria-label="Primary">
+        <button class="tab is-active" data-view="tasks" type="button"><span>▤</span><small>Tasks</small></button>
+        <button class="tab" data-view="calendar" type="button"><span>▦</span><small>Calendar</small></button>
+        <button class="tab tab-add" data-action="add" type="button" aria-label="Add a task"><span>＋</span></button>
+        <button class="tab" data-view="about" type="button"><span>◌</span><small>About</small></button>
+    </nav>
+</div>
+
+<dialog id="taskDialog" class="sheet">
+    <form id="taskForm" method="dialog">
+        <div class="sheet-head">
+            <div><p class="eyebrow" id="dialogEyebrow">A NEW INTENTION</p><h2 id="dialogTitle">Add a task</h2></div>
+            <button class="icon-btn" id="closeDialog" type="button" aria-label="Close">×</button>
+        </div>
+        <label class="field">Task title
+            <input id="taskTitle" type="text" maxlength="120" placeholder="What needs doing?" required autocomplete="off">
+        </label>
+        <label class="field">Notes <span class="optional">optional</span>
+            <textarea id="taskDescription" maxlength="1000" rows="3" placeholder="A little context, if it helps."></textarea>
+        </label>
+        <div class="field">Priority
+            <div class="priority-options" id="priorityOptions">
+                <label><input type="radio" name="priority" value="1"><span>Very low</span></label>
+                <label><input type="radio" name="priority" value="2"><span>Low</span></label>
+                <label><input type="radio" name="priority" value="3" checked><span>Medium</span></label>
+                <label><input type="radio" name="priority" value="4"><span>High</span></label>
+                <label><input type="radio" name="priority" value="5"><span>Critical</span></label>
+            </div>
+        </div>
+        <div class="deadline-setting">
+            <div><strong>Deadline</strong><p>Optional. Leave it off for an open-ended task.</p></div>
+            <label class="switch"><input id="hasDeadline" type="checkbox"><span></span></label>
+        </div>
+        <label class="field deadline-field" id="deadlineField">Date &amp; time
+            <input id="taskDeadline" type="datetime-local" disabled>
+        </label>
+        <p class="form-error" id="formError" hidden></p>
+        <div class="sheet-actions">
+            <button class="secondary-btn" id="cancelDialog" type="button">Cancel</button>
+            <button class="primary-btn" id="saveTask" type="submit">Add task</button>
+        </div>
+    </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>

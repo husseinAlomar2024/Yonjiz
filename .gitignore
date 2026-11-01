@@ -32,3 +32,11 @@ build/
 dist/
 seed/*.db
 desktop-error.log
+
+# Android build output
+mobile/.gradle/
+mobile/build/
+mobile/app/build/
+mobile/local.properties
+mobile/screenshots/
+*.apk

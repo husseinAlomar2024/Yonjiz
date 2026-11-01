@@ -63,6 +63,36 @@ python -m venv .venv-desktop
 > It is seeded at build time and then evolves locally, so the app never needs a
 > server to run.
 
+## Android mobile app (offline)
+
+![YONJIZ mobile tasks](docs/screenshots/mobile-tasks.png)
+
+A real installable APK is on the Windows Desktop:
+
+```text
+C:\Users\husse\Desktop\YONJIZ.apk
+```
+
+It is a standalone WebView shell around local HTML/CSS/JS with data stored in a
+private JSON file. The manifest has **no INTERNET permission**; there is no
+server, no backend, and no network call. Features include:
+
+- task list with optional deadlines, notes, priorities and completion;
+- live analog/digital clock;
+- month calendar with deadline dots and day filtering;
+- search and fast filters;
+- local-only persistence.
+
+It does not share data with the desktop or web editions. See
+[mobile/README.md](mobile/README.md) for installation and rebuild steps.
+
+### Rebuild the APK
+
+```powershell
+cd "C:\Users\husse\Desktop\todo_app"
+.\mobile\build_android.ps1
+```
+
 ## Web edition (optional)
 
 The desktop app is the recommended way to use YONJIZ. This web edition remains
@@ -184,6 +214,10 @@ desktop/widgets.py       clock, calendar cards, task cards, dialogs
 desktop/assets/          app icon and brand mark
 build_desktop.ps1        package/install/create Desktop shortcut
 YONJIZ.spec              PyInstaller build definition
+mobile/                  standalone Android project (WebView + local files)
+mobile/app/src/main/assets/  mobile HTML/CSS/JS, no network
+mobile/build_android.ps1 build APK and copy it to the Desktop
+docs/screenshots/mobile-*.png
 main.py                  FastAPI app, security headers, error pages
 config.py                env/config and generated local secrets
 database.py              engine, session, SQLite pragmas
