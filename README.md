@@ -1,8 +1,8 @@
 # YONJIZ · ينجز
 
-A complete rebuild of the supplied FastAPI todo app, with a proper interface, a live clock, a deadline calendar, optional task deadlines, and a three-seat administrator console with one protected main admin.
+A bilingual (English / Arabic) task management app built on a FastAPI REST API, with a live clock, a deadline calendar, optional task deadlines, and a three-seat administrator console with one protected main admin. It ships as a web app, an offline Windows desktop app and an Android app.
 
-The original code is preserved in spirit (FastAPI + SQLAlchemy + Jinja) but the broken pieces are fixed: duplicate `Todos` models, a missing `Users` model, the hard-coded PostgreSQL URL, missing deadline/clock markup, and unrestricted admin promotion.
+**Tech stack:** Python, FastAPI, SQLAlchemy, Pydantic, Jinja2, SQLite (PostgreSQL supported), JWT cookie authentication, Qt (desktop), PyInstaller, pytest.
 
 ![YONJIZ workspace](docs/screenshots/dashboard.png)
 
@@ -55,8 +55,7 @@ The desktop edition is a **native Qt application**, not a browser wrapper:
   `Ctrl+2` admin console, `Ctrl+L` log out.
 - Minimum window size is 1160×780; it opens at 1440×940.
 
-The current local install was built from this checkout and the seed kept your
-existing `hussein_alomar` main admin plus `hussein_1`.
+The installer seeds the local database from the `seed` folder on first launch.
 
 | Sign in | Password visible |
 | --- | --- |
