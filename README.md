@@ -87,11 +87,7 @@ python -m venv .venv-desktop
 
 ![YONJIZ mobile tasks](docs/screenshots/mobile-tasks.png)
 
-A real installable APK is on the Windows Desktop:
-
-```text
-C:\Users\husse\Desktop\YONJIZ.apk
-```
+The Android build script below produces an installable `YONJIZ.apk`.
 
 It is a standalone WebView shell around local HTML/CSS/JS with data stored in a
 private JSON file. The manifest has **no INTERNET permission**; there is no
@@ -109,7 +105,6 @@ It does not share data with the desktop or web editions. See
 ### Rebuild the APK
 
 ```powershell
-cd "C:\Users\husse\Desktop\todo_app"
 .\mobile\build_android.ps1
 ```
 
@@ -304,7 +299,7 @@ The attached project used PostgreSQL with a `users`/`todos` schema that did not 
 4. Set `DATABASE_URL` and install `psycopg[binary]`.
 5. Run the migration in a staging copy first, then start the app and sign in with the existing password.
 
-For SQLite, use a fresh `todo.db`; the supplied `testdb.db` was empty. See [docs/ER_DIAGRAM.md](docs/ER_DIAGRAM.md#migration-notes) for the details.
+For SQLite, start with a fresh `todo.db`. See [docs/ER_DIAGRAM.md](docs/ER_DIAGRAM.md#migration-notes) for the details.
 
 ## Design notes
 
